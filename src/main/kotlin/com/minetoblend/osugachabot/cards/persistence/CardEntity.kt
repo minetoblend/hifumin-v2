@@ -2,6 +2,7 @@ package com.minetoblend.osugachabot.cards.persistence
 
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Index
 import jakarta.persistence.Table
@@ -23,6 +24,6 @@ class CardEntity(
     var globalRank: Int?
 ) {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long = 0
 }

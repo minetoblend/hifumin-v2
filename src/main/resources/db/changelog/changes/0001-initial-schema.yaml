@@ -1,34 +1,5 @@
 databaseChangeLog:
   - changeSet:
-      id: 0001-create-sequence-tables
-      author: liquibase
-      changes:
-        - createTable:
-            tableName: cards_seq
-            columns:
-              - column:
-                  name: next_val
-                  type: BIGINT
-        - insert:
-            tableName: cards_seq
-            columns:
-              - column:
-                  name: next_val
-                  value: "1"
-        - createTable:
-            tableName: card_replicas_seq
-            columns:
-              - column:
-                  name: next_val
-                  type: BIGINT
-        - insert:
-            tableName: card_replicas_seq
-            columns:
-              - column:
-                  name: next_val
-                  value: "1"
-
-  - changeSet:
       id: 0001-create-cards
       author: liquibase
       changes:
@@ -38,6 +9,7 @@ databaseChangeLog:
               - column:
                   name: id
                   type: BIGINT
+                  autoIncrement: true
                   constraints:
                     primaryKey: true
                     nullable: false
@@ -91,6 +63,7 @@ databaseChangeLog:
               - column:
                   name: id
                   type: BIGINT
+                  autoIncrement: true
                   constraints:
                     primaryKey: true
                     nullable: false

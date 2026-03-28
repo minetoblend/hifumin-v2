@@ -1,34 +1,5 @@
 databaseChangeLog:
   - changeSet:
-      id: 0002-create-sequence-tables
-      author: liquibase
-      changes:
-        - createTable:
-            tableName: drops_seq
-            columns:
-              - column:
-                  name: next_val
-                  type: BIGINT
-        - insert:
-            tableName: drops_seq
-            columns:
-              - column:
-                  name: next_val
-                  value: "1"
-        - createTable:
-            tableName: dropped_cards_seq
-            columns:
-              - column:
-                  name: next_val
-                  type: BIGINT
-        - insert:
-            tableName: dropped_cards_seq
-            columns:
-              - column:
-                  name: next_val
-                  value: "1"
-
-  - changeSet:
       id: 0002-create-drops
       author: liquibase
       changes:
@@ -38,6 +9,7 @@ databaseChangeLog:
               - column:
                   name: id
                   type: BIGINT
+                  autoIncrement: true
                   constraints:
                     primaryKey: true
                     nullable: false
@@ -57,6 +29,7 @@ databaseChangeLog:
               - column:
                   name: id
                   type: BIGINT
+                  autoIncrement: true
                   constraints:
                     primaryKey: true
                     nullable: false
