@@ -6,6 +6,7 @@ import com.minetoblend.osugachabot.cards.CardId
 import com.minetoblend.osugachabot.cards.CardReplica
 import com.minetoblend.osugachabot.cards.CardReplicaId
 import com.minetoblend.osugachabot.cards.CardService
+import com.minetoblend.osugachabot.cards.persistence.CardEntity
 import com.minetoblend.osugachabot.cards.persistence.CardRepository
 import com.minetoblend.osugachabot.cards.persistence.CardReplicaEntity
 import com.minetoblend.osugachabot.cards.persistence.CardReplicaRepository
@@ -19,8 +20,13 @@ import com.minetoblend.osugachabot.drops.persistence.DropEntity
 import com.minetoblend.osugachabot.drops.persistence.DropRepository
 import com.minetoblend.osugachabot.users.UserId
 import org.springframework.data.repository.findByIdOrNull
+import java.time.Instant
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import kotlin.time.Clock
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.toKotlinInstant
 
 @Service
 class DropServiceImpl(
@@ -29,6 +35,7 @@ class DropServiceImpl(
     private val dropRepository: DropRepository,
     private val cardReplicaRepository: CardReplicaRepository,
 ) : DropService {
+    override fun expiryDuration(): Duration = 60.seconds
 
     @Transactional
     override fun createDrop(): Drop {
@@ -53,11 +60,15 @@ class DropServiceImpl(
     @Transactional
     override fun claimCard(dropId: DropId, cardIndex: Int, userId: UserId): ClaimResult {
         val drop = dropRepository.findByIdOrNull(dropId.value) ?: return ClaimResult.DropNotFound
+
+
+        if (Clock.System.now() > drop.createdAt.toKotlinInstant() + expiryDuration())
+            return ClaimResult.Expired
+
         val droppedCard = drop.cards.find { it.cardIndex == cardIndex } ?: return ClaimResult.DropNotFound
 
-        if (droppedCard.claimedByUserId != null) {
+        if (droppedCard.claimedByUserId != null)
             return ClaimResult.AlreadyClaimed(drop.toDomain())
-        }
 
         droppedCard.claimedByUserId = userId.value
 
@@ -75,6 +86,7 @@ class DropServiceImpl(
     private fun DropEntity.toDomain() = Drop(
         id = DropId(id),
         cards = cards.map { it.toDomain() },
+        createdAt = createdAt,
     )
 
     private fun DroppedCardEntity.toDomain() = DroppedCard(
@@ -84,7 +96,7 @@ class DropServiceImpl(
         claimedBy = claimedByUserId?.let { UserId(it) },
     )
 
-    private fun com.minetoblend.osugachabot.cards.persistence.CardEntity.toDomain() = Card(
+    private fun CardEntity.toDomain() = Card(
         id = CardId(id),
         username = username,
         countryCode = countryCode,

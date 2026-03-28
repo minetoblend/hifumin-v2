@@ -23,4 +23,5 @@ data class DroppedCard(
 data class Drop(
     val id: DropId,
     val cards: List<DroppedCard>,
+    val createdAt: java.time.Instant,
 )

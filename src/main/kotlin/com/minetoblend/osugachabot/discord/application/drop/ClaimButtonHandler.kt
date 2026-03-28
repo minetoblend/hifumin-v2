@@ -26,6 +26,7 @@ class ClaimButtonHandler(private val dropService: DropService) : ButtonInteracti
             is ClaimResult.Claimed -> result.drop
             is ClaimResult.AlreadyClaimed -> result.drop
             ClaimResult.DropNotFound -> return
+            ClaimResult.Expired -> return
         }
 
         ack.edit {

@@ -7,9 +7,13 @@ import com.minetoblend.osugachabot.drops.DropService
 import com.minetoblend.osugachabot.drops.DroppedCard
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.core.behavior.interaction.respondPublic
+import dev.kord.core.behavior.interaction.response.edit
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.rest.builder.component.ActionRowBuilder
 import dev.kord.rest.builder.message.actionRow
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.springframework.stereotype.Component
 
 
@@ -21,11 +25,21 @@ class DropCommand(private val dropService: DropService) : SlashCommand {
     override suspend fun ChatInputCommandInteractionCreateEvent.handle() {
         val drop = dropService.createDrop()
 
-        interaction.respondPublic {
+        val response = interaction.respondPublic {
             content = "${interaction.user.mention} Dropping 3 cards..."
             actionRow {
                 drop.cards.forEach { droppedCard ->
                     dropCardButton(drop, droppedCard)
+                }
+            }
+        }
+
+        coroutineScope {
+            launch {
+                delay(dropService.expiryDuration())
+
+                response.edit {
+                    components = mutableListOf()
                 }
             }
         }

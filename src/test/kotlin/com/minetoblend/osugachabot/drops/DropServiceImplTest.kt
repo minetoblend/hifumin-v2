@@ -8,6 +8,9 @@ import com.minetoblend.osugachabot.users.UserId
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
+import org.springframework.jdbc.core.JdbcTemplate
+import java.sql.Timestamp
+import java.time.Instant
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -27,6 +30,9 @@ class DropServiceImplTest {
 
     @Autowired
     private lateinit var dropRepository: DropRepository
+
+    @Autowired
+    private lateinit var jdbcTemplate: JdbcTemplate
 
     private fun seedCards(count: Int = 5) {
         repeat(count) { i -> cardRepository.save(CardEntity("Player$i", "US", null, i * 10, i + 1)) }
@@ -137,6 +143,22 @@ class DropServiceImplTest {
         val result = dropService.claimCard(drop.id, 99, UserId(1L))
 
         assertIs<ClaimResult.DropNotFound>(result)
+    }
+
+    @Test
+    fun `claimCard returns Expired when drop is older than 1 minute`() {
+        seedCards()
+        val drop = dropService.createDrop()
+
+        jdbcTemplate.update(
+            "UPDATE drops SET created_at = ? WHERE id = ?",
+            Timestamp.from(Instant.now().minusSeconds(61)),
+            drop.id.value,
+        )
+
+        val result = dropService.claimCard(drop.id, 0, UserId(1L))
+
+        assertIs<ClaimResult.Expired>(result)
     }
 
     @Test

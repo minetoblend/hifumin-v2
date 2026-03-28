@@ -27,4 +27,5 @@ class DropEntity {
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     var createdAt: Instant = Instant.now()
+
 }
