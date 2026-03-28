@@ -11,14 +11,20 @@ import dev.kord.core.behavior.interaction.response.edit
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.rest.builder.component.ActionRowBuilder
 import dev.kord.rest.builder.message.actionRow
-import kotlinx.coroutines.coroutineScope
+import io.opentelemetry.context.Context
+import io.opentelemetry.extension.kotlin.asContextElement
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 
 
 @Component
-class DropCommand(private val dropService: DropService) : SlashCommand {
+class DropCommand(
+    private val dropService: DropService,
+    @Qualifier("discordScope") private val scope: CoroutineScope,
+) : SlashCommand {
     override val name = "drop"
     override val description = "Drop 3 cards for players to claim"
 
@@ -34,13 +40,11 @@ class DropCommand(private val dropService: DropService) : SlashCommand {
             }
         }
 
-        coroutineScope {
-            launch {
-                delay(dropService.expiryDuration())
+        scope.launch(Context.root().asContextElement()) {
+            delay(dropService.expiryDuration())
 
-                response.edit {
-                    components = mutableListOf()
-                }
+            response.edit {
+                components = mutableListOf()
             }
         }
     }

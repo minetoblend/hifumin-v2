@@ -13,10 +13,8 @@ import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.instrumentation.ktor.v3_0.KtorClientTelemetry
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.DisposableBean
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
@@ -29,15 +27,13 @@ class DiscordBot(
     private val buttonHandlers: List<ButtonInteractionHandler>,
     private val dispatcher: SlashCommandDispatcher,
     private val openTelemetry: OpenTelemetry,
+    @Qualifier("discordScope") private val scope: CoroutineScope,
 ) : ApplicationRunner, DisposableBean {
 
-    private val job = SupervisorJob()
-    private val scope = CoroutineScope(Dispatchers.Default + job)
     private var kord: Kord? = null
 
     override fun destroy() {
         kord?.let { scope.launch { it.logout() } }
-        scope.cancel()
     }
 
     override fun run(args: ApplicationArguments) {
