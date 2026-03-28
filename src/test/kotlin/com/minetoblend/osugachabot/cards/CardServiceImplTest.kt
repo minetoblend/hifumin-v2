@@ -24,7 +24,7 @@ class CardServiceImplTest {
 
     @Test
     fun `findById returns card when it exists`() {
-        val entity = cardRepository.save(CardEntity("TestUser", "US", "Rhythm Incarnate", 100, 42))
+        val entity = cardRepository.save(CardEntity(123L, "TestUser", "US", "Rhythm Incarnate", 100, 42))
 
         val card = cardService.findById(CardId(entity.id))
 
@@ -46,7 +46,7 @@ class CardServiceImplTest {
 
     @Test
     fun `findById maps null fields correctly`() {
-        val entity = cardRepository.save(CardEntity("NoRankUser", "DE", null, 0, null))
+        val entity = cardRepository.save(CardEntity(456L, "NoRankUser", "DE", null, 0, null))
 
         val card = cardService.findById(CardId(entity.id))
 
@@ -57,7 +57,7 @@ class CardServiceImplTest {
 
     @Test
     fun `getRandomCards returns requested count`() {
-        repeat(5) { i -> cardRepository.save(CardEntity("RandPlayer$i", "JP", null, i, i + 1)) }
+        repeat(5) { i -> cardRepository.save(CardEntity(i.toLong(), "RandPlayer$i", "JP", null, i, i + 1)) }
 
         val cards = cardService.getRandomCards(3)
 
@@ -66,7 +66,7 @@ class CardServiceImplTest {
 
     @Test
     fun `getRandomCards returns valid Card domain objects`() {
-        repeat(3) { i -> cardRepository.save(CardEntity("ValidPlayer$i", "KR", null, i * 10, i + 1)) }
+        repeat(3) { i -> cardRepository.save(CardEntity(100L + i, "ValidPlayer$i", "KR", null, i * 10, i + 1)) }
 
         val cards = cardService.getRandomCards(2)
 

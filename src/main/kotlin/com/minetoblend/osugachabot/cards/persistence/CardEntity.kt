@@ -17,6 +17,7 @@ import jakarta.persistence.Table
     ]
 )
 class CardEntity(
+    var userId: Long,
     var username: String,
     var countryCode: String,
     var title: String?,

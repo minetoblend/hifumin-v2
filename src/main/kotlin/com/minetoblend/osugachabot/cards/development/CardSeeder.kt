@@ -30,6 +30,7 @@ class CardSeeder(
         cardRepository.saveAllAndFlush(
             cards.map {
                 CardEntity(
+                    userId = it.id,
                     username = it.username,
                     countryCode = it.countryCode,
                     title = it.title,

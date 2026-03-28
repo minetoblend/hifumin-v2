@@ -35,7 +35,7 @@ class DropServiceImplTest {
     private lateinit var jdbcTemplate: JdbcTemplate
 
     private fun seedCards(count: Int = 5) {
-        repeat(count) { i -> cardRepository.save(CardEntity("Player$i", "US", null, i * 10, i + 1)) }
+        repeat(count) { i -> cardRepository.save(CardEntity(i.toLong(), "Player$i", "US", null, i * 10, i + 1)) }
     }
 
     private fun createDrop(userId: UserId = UserId(1L)): Drop {

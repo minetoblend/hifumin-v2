@@ -1,0 +1,20 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0006-add-user-id-to-cards
+      author: liquibase
+      changes:
+        - addColumn:
+            tableName: cards
+            columns:
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                  defaultValueNumeric: "0"
+        - createIndex:
+            tableName: cards
+            indexName: idx_user_id
+            columns:
+              - column:
+                  name: user_id

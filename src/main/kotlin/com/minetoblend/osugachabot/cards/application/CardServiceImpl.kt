@@ -20,6 +20,7 @@ class CardServiceImpl(
 
     private fun CardEntity.toDomain(): Card = Card(
         CardId(id),
+        userId,
         username,
         countryCode,
         title,

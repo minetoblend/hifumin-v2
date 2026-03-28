@@ -126,6 +126,7 @@ class DropServiceImpl(
 
     private fun CardEntity.toDomain() = Card(
         id = CardId(id),
+        userId = userId,
         username = username,
         countryCode = countryCode,
         title = title,
