@@ -52,6 +52,7 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     implementation("dev.kord:kord-core:0.15.0")
     implementation("io.opentelemetry.instrumentation:opentelemetry-ktor-3.0:2.16.0-alpha")
+    implementation("io.opentelemetry.instrumentation:opentelemetry-jdbc:2.16.0-alpha")
     implementation("io.opentelemetry:opentelemetry-extension-kotlin")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
 }
