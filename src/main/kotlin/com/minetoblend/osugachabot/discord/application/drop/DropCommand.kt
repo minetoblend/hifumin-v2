@@ -21,14 +21,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
-import kotlin.math.ceil
+import kotlin.time.Clock
 import kotlin.time.Duration
 
-private fun Duration.formatMinutesSeconds(): String {
-    val totalSeconds = ceil(inWholeSeconds.toDouble()).toLong()
-    val minutes = totalSeconds / 60
-    val seconds = totalSeconds % 60
-    return if (minutes > 0) "${minutes}m ${seconds}s" else "${seconds}s"
+private fun Duration.toDiscordRelativeTimestamp(): String {
+    val epochSeconds = (Clock.System.now() + this).epochSeconds
+    return "<t:$epochSeconds:R>"
 }
 
 @Component
@@ -44,7 +42,7 @@ class DropCommand(
         when (val result = dropService.createDrop(userId)) {
             is CreateDropResult.OnCooldown -> {
                 interaction.respondEphemeral {
-                    content = "Drops are on cooldown! Try again in ${result.remaining.formatMinutesSeconds()}."
+                    content = "Drops are on cooldown! Try again ${result.remaining.toDiscordRelativeTimestamp()}."
                 }
             }
             is CreateDropResult.Created -> {

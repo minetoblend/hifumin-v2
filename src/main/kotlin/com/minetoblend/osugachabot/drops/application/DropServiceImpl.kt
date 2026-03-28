@@ -10,6 +10,9 @@ import com.minetoblend.osugachabot.cards.persistence.CardEntity
 import com.minetoblend.osugachabot.cards.persistence.CardRepository
 import com.minetoblend.osugachabot.cards.persistence.CardReplicaEntity
 import com.minetoblend.osugachabot.cards.persistence.CardReplicaRepository
+import com.minetoblend.osugachabot.cooldown.CooldownResult
+import com.minetoblend.osugachabot.cooldown.CooldownService
+import com.minetoblend.osugachabot.cooldown.CooldownType
 import com.minetoblend.osugachabot.drops.ClaimResult
 import com.minetoblend.osugachabot.drops.CreateDropResult
 import com.minetoblend.osugachabot.drops.Drop
@@ -35,19 +38,15 @@ class DropServiceImpl(
     private val cardRepository: CardRepository,
     private val dropRepository: DropRepository,
     private val cardReplicaRepository: CardReplicaRepository,
+    private val cooldownService: CooldownService,
 ) : DropService {
     override fun expiryDuration(): Duration = 60.seconds
-    override fun cooldownDuration(): Duration = 10.minutes
 
     @Transactional
     override fun createDrop(userId: UserId): CreateDropResult {
-        val lastDrop = dropRepository.findTopByCreatedByUserIdOrderByCreatedAtDesc(userId.value)
-        if (lastDrop != null) {
-            val elapsed = Clock.System.now() - lastDrop.createdAt.toKotlinInstant()
-            val remaining = cooldownDuration() - elapsed
-            if (remaining.isPositive()) {
-                return CreateDropResult.OnCooldown(remaining)
-            }
+        when (val cooldown = cooldownService.tryConsume(userId, DROP_COOLDOWN_TYPE, DROP_COOLDOWN_DURATION)) {
+            is CooldownResult.OnCooldown -> return CreateDropResult.OnCooldown(cooldown.remaining)
+            CooldownResult.Ready -> {}
         }
 
         val cards = cardService.getRandomCards(DROP_SIZE)
@@ -135,5 +134,7 @@ class DropServiceImpl(
 
     companion object {
         private const val DROP_SIZE = 3
+        private val DROP_COOLDOWN_TYPE = CooldownType("drop")
+        private val DROP_COOLDOWN_DURATION = 10.minutes
     }
 }

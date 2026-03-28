@@ -42,6 +42,7 @@ class DropServiceImplTest {
         seedCards()
         jdbcTemplate.update("DELETE FROM dropped_cards")
         jdbcTemplate.update("DELETE FROM drops")
+        jdbcTemplate.update("DELETE FROM cooldowns")
         return (dropService.createDrop(userId) as CreateDropResult.Created).drop
     }
 
@@ -50,6 +51,7 @@ class DropServiceImplTest {
         seedCards()
         jdbcTemplate.update("DELETE FROM dropped_cards")
         jdbcTemplate.update("DELETE FROM drops")
+        jdbcTemplate.update("DELETE FROM cooldowns")
 
         val result = dropService.createDrop(UserId(1L))
 
@@ -63,6 +65,7 @@ class DropServiceImplTest {
         seedCards()
         jdbcTemplate.update("DELETE FROM dropped_cards")
         jdbcTemplate.update("DELETE FROM drops")
+        jdbcTemplate.update("DELETE FROM cooldowns")
 
         val result = dropService.createDrop(UserId(1L))
 
@@ -75,6 +78,7 @@ class DropServiceImplTest {
         seedCards()
         jdbcTemplate.update("DELETE FROM dropped_cards")
         jdbcTemplate.update("DELETE FROM drops")
+        jdbcTemplate.update("DELETE FROM cooldowns")
 
         val result = dropService.createDrop(UserId(1L))
 
@@ -87,6 +91,7 @@ class DropServiceImplTest {
         seedCards()
         jdbcTemplate.update("DELETE FROM dropped_cards")
         jdbcTemplate.update("DELETE FROM drops")
+        jdbcTemplate.update("DELETE FROM cooldowns")
 
         val result = dropService.createDrop(UserId(1L))
 
@@ -99,6 +104,7 @@ class DropServiceImplTest {
         seedCards()
         jdbcTemplate.update("DELETE FROM dropped_cards")
         jdbcTemplate.update("DELETE FROM drops")
+        jdbcTemplate.update("DELETE FROM cooldowns")
         val userId = UserId(1L)
 
         dropService.createDrop(userId)
@@ -113,10 +119,14 @@ class DropServiceImplTest {
         seedCards()
         jdbcTemplate.update("DELETE FROM dropped_cards")
         jdbcTemplate.update("DELETE FROM drops")
+        jdbcTemplate.update("DELETE FROM cooldowns")
         val userId = UserId(1L)
 
         dropService.createDrop(userId)
-        jdbcTemplate.update("UPDATE drops SET created_at = ?", Timestamp.from(Instant.now().minusSeconds(601)))
+        jdbcTemplate.update(
+            "UPDATE cooldowns SET last_used_at = ? WHERE type = 'drop'",
+            Timestamp.from(Instant.now().minusSeconds(601)),
+        )
 
         val result = dropService.createDrop(userId)
 
@@ -128,6 +138,7 @@ class DropServiceImplTest {
         seedCards()
         jdbcTemplate.update("DELETE FROM dropped_cards")
         jdbcTemplate.update("DELETE FROM drops")
+        jdbcTemplate.update("DELETE FROM cooldowns")
 
         dropService.createDrop(UserId(1L))
         val result = dropService.createDrop(UserId(2L))
