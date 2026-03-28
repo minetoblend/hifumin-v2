@@ -55,7 +55,8 @@ kotlin {
         freeCompilerArgs.addAll(
             "-Xjsr305=strict",
             "-Xannotation-default-target=param-property",
-            "-Xcontext-sensitive-resolution"
+            "-Xcontext-sensitive-resolution",
+            "-Xcontext-parameters",
         )
     }
 }
