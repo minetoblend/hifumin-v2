@@ -1,0 +1,89 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0002-create-sequence-tables
+      author: liquibase
+      changes:
+        - createTable:
+            tableName: drops_seq
+            columns:
+              - column:
+                  name: next_val
+                  type: BIGINT
+        - insert:
+            tableName: drops_seq
+            columns:
+              - column:
+                  name: next_val
+                  value: "1"
+        - createTable:
+            tableName: dropped_cards_seq
+            columns:
+              - column:
+                  name: next_val
+                  type: BIGINT
+        - insert:
+            tableName: dropped_cards_seq
+            columns:
+              - column:
+                  name: next_val
+                  value: "1"
+
+  - changeSet:
+      id: 0002-create-drops
+      author: liquibase
+      changes:
+        - createTable:
+            tableName: drops
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: DATETIME(6)
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 0002-create-dropped-cards
+      author: liquibase
+      changes:
+        - createTable:
+            tableName: dropped_cards
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: drop_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_dropped_cards_drop
+                    references: drops(id)
+              - column:
+                  name: card_index
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: card_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_dropped_cards_card
+                    references: cards(id)
+              - column:
+                  name: card_condition
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: claimed_by_user_id
+                  type: BIGINT

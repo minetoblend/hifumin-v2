@@ -1,15 +1,16 @@
 package com.minetoblend.osugachabot.discord.infrastructure
 
+import com.minetoblend.osugachabot.discord.ButtonInteractionHandler
 import com.minetoblend.osugachabot.discord.DiscordProperties
 import com.minetoblend.osugachabot.discord.SlashCommand
 import com.minetoblend.osugachabot.discord.application.SlashCommandDispatcher
 import dev.kord.core.Kord
+import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.core.on
 import io.ktor.client.*
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.AttributeKey
-import io.opentelemetry.instrumentation.api.instrumenter.SpanNameExtractor
 import io.opentelemetry.instrumentation.ktor.v3_0.KtorClientTelemetry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Component
 class DiscordBot(
     private val properties: DiscordProperties,
     private val slashCommands: List<SlashCommand>,
+    private val buttonHandlers: List<ButtonInteractionHandler>,
     private val dispatcher: SlashCommandDispatcher,
     private val openTelemetry: OpenTelemetry,
 ) : ApplicationRunner {
@@ -62,6 +64,11 @@ class DiscordBot(
                         handle()
                     }
                 }
+            }
+
+            kord.on<ButtonInteractionCreateEvent> {
+                val handler = buttonHandlers.find { it.canHandle(interaction.componentId) } ?: return@on
+                handler.run { handle() }
             }
 
             kord.login()

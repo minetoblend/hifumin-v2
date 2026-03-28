@@ -107,7 +107,7 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: condition
+                  name: card_condition
                   type: INT
                   constraints:
                     nullable: false
@@ -127,7 +127,7 @@ databaseChangeLog:
             indexName: idx_condition
             columns:
               - column:
-                  name: condition
+                  name: card_condition
         - createIndex:
             tableName: card_replicas
             indexName: idx_created_at

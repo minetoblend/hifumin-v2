@@ -1,0 +1,157 @@
+package com.minetoblend.osugachabot.drops
+
+import com.minetoblend.osugachabot.TestcontainersConfiguration
+import com.minetoblend.osugachabot.cards.persistence.CardEntity
+import com.minetoblend.osugachabot.cards.persistence.CardRepository
+import com.minetoblend.osugachabot.drops.persistence.DropRepository
+import com.minetoblend.osugachabot.users.UserId
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.Import
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
+
+@Import(TestcontainersConfiguration::class)
+@SpringBootTest
+class DropServiceImplTest {
+
+    @Autowired
+    private lateinit var dropService: DropService
+
+    @Autowired
+    private lateinit var cardRepository: CardRepository
+
+    @Autowired
+    private lateinit var dropRepository: DropRepository
+
+    private fun seedCards(count: Int = 5) {
+        repeat(count) { i -> cardRepository.save(CardEntity("Player$i", "US", null, i * 10, i + 1)) }
+    }
+
+    @Test
+    fun `createDrop returns a drop with 3 cards`() {
+        seedCards()
+
+        val drop = dropService.createDrop()
+
+        assertEquals(3, drop.cards.size)
+        assertTrue(drop.id.value > 0)
+    }
+
+    @Test
+    fun `createDrop persists the drop`() {
+        seedCards()
+
+        val drop = dropService.createDrop()
+
+        assertNotNull(dropRepository.findById(drop.id.value).orElse(null))
+    }
+
+    @Test
+    fun `createDrop cards have sequential indices`() {
+        seedCards()
+
+        val drop = dropService.createDrop()
+
+        assertEquals(listOf(0, 1, 2), drop.cards.map { it.index })
+    }
+
+    @Test
+    fun `createDrop cards are not claimed`() {
+        seedCards()
+
+        val drop = dropService.createDrop()
+
+        drop.cards.forEach { assertNull(it.claimedBy) }
+    }
+
+    @Test
+    fun `claimCard marks the card as claimed by the user`() {
+        seedCards()
+        val drop = dropService.createDrop()
+        val userId = UserId(42L)
+
+        val result = dropService.claimCard(drop.id, 0, userId)
+
+        assertIs<ClaimResult.Claimed>(result)
+        assertEquals(userId, result.drop.cards[0].claimedBy)
+    }
+
+    @Test
+    fun `claimCard returns a CardReplica for the user`() {
+        seedCards()
+        val drop = dropService.createDrop()
+        val userId = UserId(99L)
+
+        val result = dropService.claimCard(drop.id, 1, userId)
+
+        assertIs<ClaimResult.Claimed>(result)
+        assertEquals(userId.value, result.replica.userId)
+        assertEquals(drop.cards[1].card.id, result.replica.card.id)
+        assertEquals(drop.cards[1].condition, result.replica.condition)
+    }
+
+    @Test
+    fun `claimCard returns AlreadyClaimed when card was already taken`() {
+        seedCards()
+        val drop = dropService.createDrop()
+        val user1 = UserId(1L)
+        val user2 = UserId(2L)
+
+        dropService.claimCard(drop.id, 0, user1)
+        val result = dropService.claimCard(drop.id, 0, user2)
+
+        assertIs<ClaimResult.AlreadyClaimed>(result)
+    }
+
+    @Test
+    fun `claimCard AlreadyClaimed still returns updated drop state`() {
+        seedCards()
+        val drop = dropService.createDrop()
+        val user1 = UserId(1L)
+        val user2 = UserId(2L)
+
+        dropService.claimCard(drop.id, 0, user1)
+        val result = dropService.claimCard(drop.id, 0, user2)
+
+        assertIs<ClaimResult.AlreadyClaimed>(result)
+        assertEquals(user1, result.drop.cards[0].claimedBy)
+    }
+
+    @Test
+    fun `claimCard returns DropNotFound for unknown drop id`() {
+        val result = dropService.claimCard(DropId(Long.MAX_VALUE), 0, UserId(1L))
+
+        assertIs<ClaimResult.DropNotFound>(result)
+    }
+
+    @Test
+    fun `claimCard returns DropNotFound for invalid card index`() {
+        seedCards()
+        val drop = dropService.createDrop()
+
+        val result = dropService.claimCard(drop.id, 99, UserId(1L))
+
+        assertIs<ClaimResult.DropNotFound>(result)
+    }
+
+    @Test
+    fun `multiple cards in the same drop can be claimed independently`() {
+        seedCards()
+        val drop = dropService.createDrop()
+        val user1 = UserId(1L)
+        val user2 = UserId(2L)
+
+        val result1 = dropService.claimCard(drop.id, 0, user1)
+        val result2 = dropService.claimCard(drop.id, 1, user2)
+
+        assertIs<ClaimResult.Claimed>(result1)
+        assertIs<ClaimResult.Claimed>(result2)
+        assertEquals(user1, result1.drop.cards[0].claimedBy)
+        assertEquals(user2, result2.drop.cards[1].claimedBy)
+    }
+}
