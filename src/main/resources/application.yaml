@@ -1,3 +1,6 @@
 spring:
   application:
     name: osugachabot
+
+  quartz:
+    job-store-type: jdbc
