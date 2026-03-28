@@ -15,6 +15,9 @@ class CardServiceImpl(
     override fun findById(id: CardId): Card? =
         cards.findByIdOrNull(id.value)?.toDomain()
 
+    override fun getRandomCards(count: Int): List<Card> =
+        cards.getRandomCards(count).map { it.toDomain() }
+
     private fun CardEntity.toDomain(): Card = Card(
         CardId(id),
         username,
