@@ -35,7 +35,7 @@ class DropCommand(private val dropService: DropService) : SlashCommand {
 internal fun ActionRowBuilder.dropCardButton(drop: Drop, droppedCard: DroppedCard) {
     if (droppedCard.claimedBy == null) {
         interactionButton(ButtonStyle.Primary, ClaimButtonId(drop.id, droppedCard.index)) {
-            label = "${droppedCard.card.username} [${droppedCard.condition.name}]"
+            label = droppedCard.card.username
         }
     } else {
         interactionButton(ButtonStyle.Secondary, ClaimButtonId(drop.id, droppedCard.index)) {
