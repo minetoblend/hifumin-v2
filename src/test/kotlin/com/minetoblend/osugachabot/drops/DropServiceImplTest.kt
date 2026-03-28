@@ -38,47 +38,92 @@ class DropServiceImplTest {
         repeat(count) { i -> cardRepository.save(CardEntity("Player$i", "US", null, i * 10, i + 1)) }
     }
 
+    private fun createDrop(): Drop {
+        seedCards()
+        jdbcTemplate.update("DELETE FROM dropped_cards")
+        jdbcTemplate.update("DELETE FROM drops")
+        return (dropService.createDrop() as CreateDropResult.Created).drop
+    }
+
     @Test
     fun `createDrop returns a drop with 3 cards`() {
         seedCards()
+        jdbcTemplate.update("DELETE FROM dropped_cards")
+        jdbcTemplate.update("DELETE FROM drops")
 
-        val drop = dropService.createDrop()
+        val result = dropService.createDrop()
 
-        assertEquals(3, drop.cards.size)
-        assertTrue(drop.id.value > 0)
+        assertIs<CreateDropResult.Created>(result)
+        assertEquals(3, result.drop.cards.size)
+        assertTrue(result.drop.id.value > 0)
     }
 
     @Test
     fun `createDrop persists the drop`() {
         seedCards()
+        jdbcTemplate.update("DELETE FROM dropped_cards")
+        jdbcTemplate.update("DELETE FROM drops")
 
-        val drop = dropService.createDrop()
+        val result = dropService.createDrop()
 
-        assertNotNull(dropRepository.findById(drop.id.value).orElse(null))
+        assertIs<CreateDropResult.Created>(result)
+        assertNotNull(dropRepository.findById(result.drop.id.value).orElse(null))
     }
 
     @Test
     fun `createDrop cards have sequential indices`() {
         seedCards()
+        jdbcTemplate.update("DELETE FROM dropped_cards")
+        jdbcTemplate.update("DELETE FROM drops")
 
-        val drop = dropService.createDrop()
+        val result = dropService.createDrop()
 
-        assertEquals(listOf(0, 1, 2), drop.cards.map { it.index })
+        assertIs<CreateDropResult.Created>(result)
+        assertEquals(listOf(0, 1, 2), result.drop.cards.map { it.index })
     }
 
     @Test
     fun `createDrop cards are not claimed`() {
         seedCards()
+        jdbcTemplate.update("DELETE FROM dropped_cards")
+        jdbcTemplate.update("DELETE FROM drops")
 
-        val drop = dropService.createDrop()
+        val result = dropService.createDrop()
 
-        drop.cards.forEach { assertNull(it.claimedBy) }
+        assertIs<CreateDropResult.Created>(result)
+        result.drop.cards.forEach { assertNull(it.claimedBy) }
+    }
+
+    @Test
+    fun `createDrop returns OnCooldown when called again within 10 minutes`() {
+        seedCards()
+        jdbcTemplate.update("DELETE FROM dropped_cards")
+        jdbcTemplate.update("DELETE FROM drops")
+
+        dropService.createDrop()
+        val result = dropService.createDrop()
+
+        assertIs<CreateDropResult.OnCooldown>(result)
+        assertTrue(result.remaining.isPositive())
+    }
+
+    @Test
+    fun `createDrop returns Created after cooldown has elapsed`() {
+        seedCards()
+        jdbcTemplate.update("DELETE FROM dropped_cards")
+        jdbcTemplate.update("DELETE FROM drops")
+
+        dropService.createDrop()
+        jdbcTemplate.update("UPDATE drops SET created_at = ?", Timestamp.from(Instant.now().minusSeconds(601)))
+
+        val result = dropService.createDrop()
+
+        assertIs<CreateDropResult.Created>(result)
     }
 
     @Test
     fun `claimCard marks the card as claimed by the user`() {
-        seedCards()
-        val drop = dropService.createDrop()
+        val drop = createDrop()
         val userId = UserId(42L)
 
         val result = dropService.claimCard(drop.id, 0, userId)
@@ -89,8 +134,7 @@ class DropServiceImplTest {
 
     @Test
     fun `claimCard returns a CardReplica for the user`() {
-        seedCards()
-        val drop = dropService.createDrop()
+        val drop = createDrop()
         val userId = UserId(99L)
 
         val result = dropService.claimCard(drop.id, 1, userId)
@@ -103,8 +147,7 @@ class DropServiceImplTest {
 
     @Test
     fun `claimCard returns AlreadyClaimed when card was already taken`() {
-        seedCards()
-        val drop = dropService.createDrop()
+        val drop = createDrop()
         val user1 = UserId(1L)
         val user2 = UserId(2L)
 
@@ -116,8 +159,7 @@ class DropServiceImplTest {
 
     @Test
     fun `claimCard AlreadyClaimed still returns updated drop state`() {
-        seedCards()
-        val drop = dropService.createDrop()
+        val drop = createDrop()
         val user1 = UserId(1L)
         val user2 = UserId(2L)
 
@@ -137,8 +179,7 @@ class DropServiceImplTest {
 
     @Test
     fun `claimCard returns DropNotFound for invalid card index`() {
-        seedCards()
-        val drop = dropService.createDrop()
+        val drop = createDrop()
 
         val result = dropService.claimCard(drop.id, 99, UserId(1L))
 
@@ -147,8 +188,7 @@ class DropServiceImplTest {
 
     @Test
     fun `claimCard returns Expired when drop is older than 1 minute`() {
-        seedCards()
-        val drop = dropService.createDrop()
+        val drop = createDrop()
 
         jdbcTemplate.update(
             "UPDATE drops SET created_at = ? WHERE id = ?",
@@ -163,8 +203,7 @@ class DropServiceImplTest {
 
     @Test
     fun `multiple cards in the same drop can be claimed independently`() {
-        seedCards()
-        val drop = dropService.createDrop()
+        val drop = createDrop()
         val user1 = UserId(1L)
         val user2 = UserId(2L)
 

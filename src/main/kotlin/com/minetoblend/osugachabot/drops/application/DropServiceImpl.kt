@@ -11,6 +11,7 @@ import com.minetoblend.osugachabot.cards.persistence.CardRepository
 import com.minetoblend.osugachabot.cards.persistence.CardReplicaEntity
 import com.minetoblend.osugachabot.cards.persistence.CardReplicaRepository
 import com.minetoblend.osugachabot.drops.ClaimResult
+import com.minetoblend.osugachabot.drops.CreateDropResult
 import com.minetoblend.osugachabot.drops.Drop
 import com.minetoblend.osugachabot.drops.DropId
 import com.minetoblend.osugachabot.drops.DropService
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import kotlin.time.Clock
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toKotlinInstant
 
@@ -35,9 +37,19 @@ class DropServiceImpl(
     private val cardReplicaRepository: CardReplicaRepository,
 ) : DropService {
     override fun expiryDuration(): Duration = 60.seconds
+    override fun cooldownDuration(): Duration = 10.minutes
 
     @Transactional
-    override fun createDrop(): Drop {
+    override fun createDrop(): CreateDropResult {
+        val lastDrop = dropRepository.findTopByOrderByCreatedAtDesc()
+        if (lastDrop != null) {
+            val elapsed = Clock.System.now() - lastDrop.createdAt.toKotlinInstant()
+            val remaining = cooldownDuration() - elapsed
+            if (remaining.isPositive()) {
+                return CreateDropResult.OnCooldown(remaining)
+            }
+        }
+
         val cards = cardService.getRandomCards(DROP_SIZE)
         val entity = dropRepository.save(DropEntity())
 
@@ -52,7 +64,7 @@ class DropServiceImpl(
             )
         }
 
-        return dropRepository.save(entity).toDomain()
+        return CreateDropResult.Created(dropRepository.save(entity).toDomain())
     }
 
     @Transactional

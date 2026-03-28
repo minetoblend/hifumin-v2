@@ -14,22 +14,21 @@ class UserSettingsServiceImpl(
     private val repository: UserSettingsRepository,
 ) : UserSettingsService {
 
-    override fun getSettings(userId: UserId): UserSettings {
-        val entity = repository.findByIdOrNull(userId.value)
-            ?: return UserSettings(userId, reminders = true)
-        return entity.toDomain()
-    }
+    override fun getSettings(userId: UserId): UserSettings =
+        repository.findByIdOrNull(userId.value)?.toDomain()
+            ?: UserSettings.Default
 
     @Transactional
     override fun setReminders(userId: UserId, enabled: Boolean) {
-        val entity = repository.findByIdOrNull(userId.value)
-            ?: UserSettingsEntity(userId.value).also { repository.save(it) }
+        val entity = repository.findByIdOrNull(userId.value) ?: UserSettings.Default.toEntity(userId)
         entity.reminders = enabled
         repository.save(entity)
     }
 
-    private fun UserSettingsEntity.toDomain() = UserSettings(
-        userId = UserId(userId),
-        reminders = reminders,
-    )
+    private fun UserSettingsEntity.toDomain() =
+        UserSettings(
+            reminders = reminders,
+        )
+
+    private fun UserSettings.toEntity(userId: UserId): UserSettingsEntity = UserSettingsEntity(userId.value, reminders)
 }

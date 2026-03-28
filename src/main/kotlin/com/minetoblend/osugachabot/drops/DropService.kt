@@ -6,9 +6,15 @@ import kotlin.time.Duration
 
 interface DropService {
     fun expiryDuration(): Duration
+    fun cooldownDuration(): Duration
 
-    fun createDrop(): Drop
+    fun createDrop(): CreateDropResult
     fun claimCard(dropId: DropId, cardIndex: Int, userId: UserId): ClaimResult
+}
+
+sealed class CreateDropResult {
+    data class Created(val drop: Drop) : CreateDropResult()
+    data class OnCooldown(val remaining: Duration) : CreateDropResult()
 }
 
 sealed class ClaimResult {
