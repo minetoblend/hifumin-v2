@@ -1,0 +1,20 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0003-create-user-settings
+      author: liquibase
+      changes:
+        - createTable:
+            tableName: user_settings
+            columns:
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: reminders
+                  type: BIT(1)
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
