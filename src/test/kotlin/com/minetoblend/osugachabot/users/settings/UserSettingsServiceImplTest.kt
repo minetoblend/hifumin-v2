@@ -17,12 +17,12 @@ class UserSettingsServiceImplTest {
     private lateinit var userSettingsService: UserSettingsService
 
     @Test
-    fun `reminders defaults to true for new users`() {
+    fun `reminders defaults to false for new users`() {
         val userId = UserId(1001L)
 
         val settings = userSettingsService.getSettings(userId)
 
-        assertTrue(settings.reminders)
+        assertFalse(settings.reminders)
     }
 
     @Test
