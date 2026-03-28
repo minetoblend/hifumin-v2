@@ -4,6 +4,8 @@ spring:
 
   quartz:
     job-store-type: jdbc
+    jdbc:
+      initialize-schema: always
 
 discord:
   token: ${DISCORD_BOT_TOKEN}
