@@ -18,9 +18,11 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.DisposableBean
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
 
 @Component
+@ConditionalOnProperty(prefix = "discord", name = ["enabled"], havingValue = "true", matchIfMissing = true)
 class DiscordBot(
     private val properties: DiscordProperties,
     private val slashCommands: List<SlashCommand>,

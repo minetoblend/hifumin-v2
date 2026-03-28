@@ -5,3 +5,7 @@ spring:
   quartz:
     jdbc:
       initialize-schema: always
+
+discord:
+  enabled: false
+  token: placeholder
