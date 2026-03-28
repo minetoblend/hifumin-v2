@@ -4,9 +4,9 @@ import com.minetoblend.osugachabot.discord.ButtonInteractionHandler
 import com.minetoblend.osugachabot.drops.ClaimResult
 import com.minetoblend.osugachabot.drops.DropService
 import com.minetoblend.osugachabot.users.UserId
-import dev.kord.core.behavior.interaction.response.edit
+import dev.kord.core.behavior.interaction.respondEphemeral
+import dev.kord.core.behavior.interaction.respondPublic
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
-import dev.kord.rest.builder.message.actionRow
 import org.springframework.stereotype.Component
 
 @Component
@@ -20,20 +20,40 @@ class ClaimButtonHandler(private val dropService: DropService) : ButtonInteracti
         val cardIndex = buttonId.cardIndex
         val userId = UserId(interaction.user.id.value.toLong())
 
-        val ack = interaction.deferPublicMessageUpdate()
+        when (val result = dropService.claimCard(dropId, cardIndex, userId)) {
+            is ClaimResult.Claimed -> {
+                interaction.respondPublic {
 
-        val drop = when (val result = dropService.claimCard(dropId, cardIndex, userId)) {
-            is ClaimResult.Claimed -> result.drop
-            is ClaimResult.AlreadyClaimed -> result.drop
-            ClaimResult.DropNotFound -> return
-            ClaimResult.Expired -> return
-        }
+                    content = buildString {
+                        append("${interaction.user.mention} you claimed the *${result.replica.card.username}* card `${result.replica.id.toDisplayId()}`!")
+                        append(" ")
+                        append(
+                            when (result.replica.condition) {
+                                Mint -> "It is in mint condition!"
+                                Good -> "It is in good condition."
+                                Poor -> "It is in poor condition."
+                                Damaged -> "Unfortunately, it is badly damaged."
+                            }
+                        )
+                    }
+                }
+            }
 
-        ack.edit {
-            components = mutableListOf()
-            actionRow {
-                drop.cards.forEach { droppedCard ->
-                    dropCardButton(drop, droppedCard)
+            is ClaimResult.AlreadyClaimed -> {
+                interaction.respondPublic {
+                    content = "${interaction.user.mention} This card is already claimed!"
+                }
+            }
+
+            ClaimResult.DropNotFound -> {
+                interaction.respondEphemeral {
+                    content = "This drop could not be found."
+                }
+            }
+
+            ClaimResult.Expired -> {
+                interaction.respondEphemeral {
+                    content = "This drop has expired."
                 }
             }
         }
