@@ -4,3 +4,6 @@ spring:
 
   quartz:
     job-store-type: jdbc
+
+discord:
+  token: ${DISCORD_TOKEN}

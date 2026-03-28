@@ -49,6 +49,8 @@ dependencies {
     testImplementation("org.testcontainers:testcontainers-junit-jupiter")
     testImplementation("org.testcontainers:testcontainers-mysql")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    implementation("dev.kord:kord-core:0.15.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
 }
 
 kotlin {
