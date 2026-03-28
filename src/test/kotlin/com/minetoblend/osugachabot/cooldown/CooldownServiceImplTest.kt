@@ -11,7 +11,6 @@ import java.time.Instant
 import kotlin.test.Test
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
-import kotlin.time.Duration.Companion.minutes
 
 @Import(TestcontainersConfiguration::class)
 @SpringBootTest
@@ -25,9 +24,8 @@ class CooldownServiceImplTest {
 
     private val userId = UserId(1L)
     private val otherUserId = UserId(2L)
-    private val type = CooldownType("test")
-    private val otherType = CooldownType("other")
-    private val duration = 10.minutes
+    private val type = CooldownType.DROP
+    private val otherType = CooldownType.CLAIM
 
     private fun cleanup() {
         jdbcTemplate.update("DELETE FROM cooldowns")
@@ -37,7 +35,7 @@ class CooldownServiceImplTest {
     fun `checkCooldown returns Ready when no cooldown recorded`() {
         cleanup()
 
-        val result = cooldownService.checkCooldown(userId, type, duration)
+        val result = cooldownService.checkCooldown(userId, type)
 
         assertIs<CooldownResult.Ready>(result)
     }
@@ -47,7 +45,7 @@ class CooldownServiceImplTest {
         cleanup()
 
         cooldownService.recordCooldown(userId, type)
-        val result = cooldownService.checkCooldown(userId, type, duration)
+        val result = cooldownService.checkCooldown(userId, type)
 
         assertIs<CooldownResult.OnCooldown>(result)
         assertTrue(result.remaining.isPositive())
@@ -60,12 +58,12 @@ class CooldownServiceImplTest {
         cooldownService.recordCooldown(userId, type)
         jdbcTemplate.update(
             "UPDATE cooldowns SET last_used_at = ? WHERE user_id = ? AND type = ?",
-            Timestamp.from(Instant.now().minusSeconds(duration.inWholeSeconds + 1)),
+            Timestamp.from(Instant.now().minusSeconds(cooldownService.durationFor(type).inWholeSeconds + 1)),
             userId.value,
             type.value,
         )
 
-        val result = cooldownService.checkCooldown(userId, type, duration)
+        val result = cooldownService.checkCooldown(userId, type)
 
         assertIs<CooldownResult.Ready>(result)
     }
@@ -75,7 +73,7 @@ class CooldownServiceImplTest {
         cleanup()
 
         cooldownService.recordCooldown(userId, type)
-        val result = cooldownService.checkCooldown(otherUserId, type, duration)
+        val result = cooldownService.checkCooldown(otherUserId, type)
 
         assertIs<CooldownResult.Ready>(result)
     }
@@ -85,7 +83,7 @@ class CooldownServiceImplTest {
         cleanup()
 
         cooldownService.recordCooldown(userId, type)
-        val result = cooldownService.checkCooldown(userId, otherType, duration)
+        val result = cooldownService.checkCooldown(userId, otherType)
 
         assertIs<CooldownResult.Ready>(result)
     }
@@ -97,13 +95,13 @@ class CooldownServiceImplTest {
         cooldownService.recordCooldown(userId, type)
         jdbcTemplate.update(
             "UPDATE cooldowns SET last_used_at = ? WHERE user_id = ? AND type = ?",
-            Timestamp.from(Instant.now().minusSeconds(duration.inWholeSeconds + 1)),
+            Timestamp.from(Instant.now().minusSeconds(cooldownService.durationFor(type).inWholeSeconds + 1)),
             userId.value,
             type.value,
         )
         cooldownService.recordCooldown(userId, type)
 
-        val result = cooldownService.checkCooldown(userId, type, duration)
+        val result = cooldownService.checkCooldown(userId, type)
 
         assertIs<CooldownResult.OnCooldown>(result)
     }
@@ -112,18 +110,18 @@ class CooldownServiceImplTest {
     fun `tryConsume returns Ready and records cooldown on first call`() {
         cleanup()
 
-        val result = cooldownService.tryConsume(userId, type, duration)
+        val result = cooldownService.tryConsume(userId, type)
 
         assertIs<CooldownResult.Ready>(result)
-        assertIs<CooldownResult.OnCooldown>(cooldownService.checkCooldown(userId, type, duration))
+        assertIs<CooldownResult.OnCooldown>(cooldownService.checkCooldown(userId, type))
     }
 
     @Test
     fun `tryConsume returns OnCooldown without updating when already active`() {
         cleanup()
 
-        cooldownService.tryConsume(userId, type, duration)
-        val result = cooldownService.tryConsume(userId, type, duration)
+        cooldownService.tryConsume(userId, type)
+        val result = cooldownService.tryConsume(userId, type)
 
         assertIs<CooldownResult.OnCooldown>(result)
         assertTrue(result.remaining.isPositive())
@@ -133,17 +131,17 @@ class CooldownServiceImplTest {
     fun `tryConsume returns Ready and resets cooldown after duration has elapsed`() {
         cleanup()
 
-        cooldownService.tryConsume(userId, type, duration)
+        cooldownService.tryConsume(userId, type)
         jdbcTemplate.update(
             "UPDATE cooldowns SET last_used_at = ? WHERE user_id = ? AND type = ?",
-            Timestamp.from(Instant.now().minusSeconds(duration.inWholeSeconds + 1)),
+            Timestamp.from(Instant.now().minusSeconds(cooldownService.durationFor(type).inWholeSeconds + 1)),
             userId.value,
             type.value,
         )
 
-        val result = cooldownService.tryConsume(userId, type, duration)
+        val result = cooldownService.tryConsume(userId, type)
 
         assertIs<CooldownResult.Ready>(result)
-        assertIs<CooldownResult.OnCooldown>(cooldownService.checkCooldown(userId, type, duration))
+        assertIs<CooldownResult.OnCooldown>(cooldownService.checkCooldown(userId, type))
     }
 }

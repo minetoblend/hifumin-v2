@@ -28,7 +28,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import kotlin.time.Clock
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toKotlinInstant
 
@@ -40,16 +39,17 @@ class DropServiceImpl(
     private val cardReplicaRepository: CardReplicaRepository,
     private val cooldownService: CooldownService,
 ) : DropService {
-    override fun dropCooldownDuration(): Duration = 10.minutes
+    override fun dropCooldownDuration(): Duration = cooldownService.durationFor(DROP)
 
-    override fun claimCooldownDuration(): Duration = 1.minutes
+    override fun claimCooldownDuration(): Duration = cooldownService.durationFor(CLAIM)
+
     override fun dropExpiryDuration(): Duration = 60.seconds
 
     @Transactional
     override fun createDrop(userId: UserId): CreateDropResult {
-        when (val cooldown = cooldownService.tryConsume(userId, DROP_COOLDOWN_TYPE, dropCooldownDuration())) {
-            is CooldownResult.OnCooldown -> return CreateDropResult.OnCooldown(cooldown.remaining)
-            CooldownResult.Ready -> {}
+        when (val cooldown = cooldownService.tryConsume(userId, DROP)) {
+            is OnCooldown -> return CreateDropResult.OnCooldown(cooldown.remaining)
+            Ready -> {}
         }
 
         val cards = cardService.getRandomCards(DROP_SIZE)
@@ -71,7 +71,7 @@ class DropServiceImpl(
 
     @Transactional
     override fun claimCard(dropId: DropId, cardIndex: Int, userId: UserId): ClaimResult {
-        when (val cooldown = cooldownService.tryConsume(userId, CLAIM_COOLDOWN_TYPE, claimCooldownDuration())) {
+        when (val cooldown = cooldownService.tryConsume(userId, CooldownType.CLAIM)) {
             is CooldownResult.OnCooldown -> return ClaimResult.OnCooldown(cooldown.remaining)
             CooldownResult.Ready -> {}
         }
@@ -142,7 +142,5 @@ class DropServiceImpl(
 
     companion object {
         private const val DROP_SIZE = 3
-        private val DROP_COOLDOWN_TYPE = CooldownType("drop")
-        private val CLAIM_COOLDOWN_TYPE = CooldownType("claim")
     }
 }

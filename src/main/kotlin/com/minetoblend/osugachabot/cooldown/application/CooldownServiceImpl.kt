@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import kotlin.time.Clock
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.toJavaInstant
 import kotlin.time.toKotlinInstant
 
@@ -18,13 +19,18 @@ class CooldownServiceImpl(
     private val cooldownRepository: CooldownRepository,
 ) : CooldownService {
 
+    override fun durationFor(type: CooldownType): Duration = when (type) {
+        CooldownType.DROP -> 10.minutes
+        CooldownType.CLAIM -> 1.minutes
+    }
+
     @Transactional
-    override fun checkCooldown(userId: UserId, type: CooldownType, duration: Duration): CooldownResult {
+    override fun checkCooldown(userId: UserId, type: CooldownType): CooldownResult {
         val entity = cooldownRepository.findByUserIdAndType(userId.value, type.value)
             ?: return CooldownResult.Ready
 
         val elapsed = Clock.System.now() - entity.lastUsedAt.toKotlinInstant()
-        val remaining = duration - elapsed
+        val remaining = durationFor(type) - elapsed
         return if (remaining.isPositive()) CooldownResult.OnCooldown(remaining) else CooldownResult.Ready
     }
 
@@ -40,12 +46,12 @@ class CooldownServiceImpl(
     }
 
     @Transactional
-    override fun tryConsume(userId: UserId, type: CooldownType, duration: Duration): CooldownResult {
+    override fun tryConsume(userId: UserId, type: CooldownType): CooldownResult {
         val now = Clock.System.now()
         val entity = cooldownRepository.findByUserIdAndType(userId.value, type.value)
 
         if (entity != null) {
-            val remaining = duration - (now - entity.lastUsedAt.toKotlinInstant())
+            val remaining = durationFor(type) - (now - entity.lastUsedAt.toKotlinInstant())
             if (remaining.isPositive()) return CooldownResult.OnCooldown(remaining)
             entity.lastUsedAt = now.toJavaInstant()
         } else {
