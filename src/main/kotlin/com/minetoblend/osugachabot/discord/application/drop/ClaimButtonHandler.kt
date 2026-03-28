@@ -4,9 +4,11 @@ import com.minetoblend.osugachabot.discord.ButtonInteractionHandler
 import com.minetoblend.osugachabot.drops.ClaimResult
 import com.minetoblend.osugachabot.drops.DropService
 import com.minetoblend.osugachabot.users.UserId
+import com.minetoblend.osugachabot.users.toUserId
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.behavior.interaction.respondPublic
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
+import kotlin.time.Clock
 import org.springframework.stereotype.Component
 
 @Component
@@ -14,11 +16,8 @@ class ClaimButtonHandler(private val dropService: DropService) : ButtonInteracti
     override fun canHandle(customId: String) = ClaimButtonId.isValid(customId)
 
     override suspend fun ButtonInteractionCreateEvent.handle() {
-        val buttonId = ClaimButtonId.fromString(interaction.componentId) ?: return
-
-        val dropId = buttonId.dropId
-        val cardIndex = buttonId.cardIndex
-        val userId = UserId(interaction.user.id.value.toLong())
+        val (dropId, cardIndex) = ClaimButtonId.fromString(interaction.componentId) ?: return
+        val userId = interaction.user.id.toUserId()
 
         when (val result = dropService.claimCard(dropId, cardIndex, userId)) {
             is ClaimResult.Claimed -> {
@@ -48,6 +47,13 @@ class ClaimButtonHandler(private val dropService: DropService) : ButtonInteracti
             ClaimResult.DropNotFound -> {
                 interaction.respondEphemeral {
                     content = "This drop could not be found."
+                }
+            }
+
+            is ClaimResult.OnCooldown -> {
+                val epochSeconds = (Clock.System.now() + result.remaining).epochSeconds
+                interaction.respondEphemeral {
+                    content = "You are claiming too fast! Try again <t:$epochSeconds:R>."
                 }
             }
 

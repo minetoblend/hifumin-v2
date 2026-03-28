@@ -40,11 +40,14 @@ class DropServiceImpl(
     private val cardReplicaRepository: CardReplicaRepository,
     private val cooldownService: CooldownService,
 ) : DropService {
-    override fun expiryDuration(): Duration = 60.seconds
+    override fun dropCooldownDuration(): Duration = 10.minutes
+
+    override fun claimCooldownDuration(): Duration = 1.minutes
+    override fun dropExpiryDuration(): Duration = 60.seconds
 
     @Transactional
     override fun createDrop(userId: UserId): CreateDropResult {
-        when (val cooldown = cooldownService.tryConsume(userId, DROP_COOLDOWN_TYPE, DROP_COOLDOWN_DURATION)) {
+        when (val cooldown = cooldownService.tryConsume(userId, DROP_COOLDOWN_TYPE, dropCooldownDuration())) {
             is CooldownResult.OnCooldown -> return CreateDropResult.OnCooldown(cooldown.remaining)
             CooldownResult.Ready -> {}
         }
@@ -68,10 +71,15 @@ class DropServiceImpl(
 
     @Transactional
     override fun claimCard(dropId: DropId, cardIndex: Int, userId: UserId): ClaimResult {
+        when (val cooldown = cooldownService.tryConsume(userId, CLAIM_COOLDOWN_TYPE, claimCooldownDuration())) {
+            is CooldownResult.OnCooldown -> return ClaimResult.OnCooldown(cooldown.remaining)
+            CooldownResult.Ready -> {}
+        }
+
         val drop = dropRepository.findByIdOrNull(dropId.value) ?: return ClaimResult.DropNotFound
 
 
-        if (Clock.System.now() > drop.createdAt.toKotlinInstant() + expiryDuration())
+        if (Clock.System.now() > drop.createdAt.toKotlinInstant() + dropExpiryDuration())
             return ClaimResult.Expired
 
         val droppedCard = drop.cards.find { it.cardIndex == cardIndex } ?: return ClaimResult.DropNotFound
@@ -135,6 +143,6 @@ class DropServiceImpl(
     companion object {
         private const val DROP_SIZE = 3
         private val DROP_COOLDOWN_TYPE = CooldownType("drop")
-        private val DROP_COOLDOWN_DURATION = 10.minutes
+        private val CLAIM_COOLDOWN_TYPE = CooldownType("claim")
     }
 }

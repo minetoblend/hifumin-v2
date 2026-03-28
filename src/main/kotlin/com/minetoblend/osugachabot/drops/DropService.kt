@@ -5,7 +5,9 @@ import com.minetoblend.osugachabot.users.UserId
 import kotlin.time.Duration
 
 interface DropService {
-    fun expiryDuration(): Duration
+    fun dropCooldownDuration(): Duration
+    fun claimCooldownDuration(): Duration
+    fun dropExpiryDuration(): Duration
 
     fun createDrop(userId: UserId): CreateDropResult
     fun claimCard(dropId: DropId, cardIndex: Int, userId: UserId): ClaimResult
@@ -19,6 +21,7 @@ sealed class CreateDropResult {
 sealed class ClaimResult {
     data class Claimed(val drop: Drop, val replica: CardReplica) : ClaimResult()
     data class AlreadyClaimed(val drop: Drop) : ClaimResult()
+    data class OnCooldown(val remaining: Duration) : ClaimResult()
     data object DropNotFound : ClaimResult()
     data object Expired : ClaimResult()
 }

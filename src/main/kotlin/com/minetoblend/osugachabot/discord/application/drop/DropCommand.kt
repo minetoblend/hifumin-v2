@@ -57,7 +57,7 @@ class DropCommand(
                 }
 
                 scope.launch(Context.root().asContextElement()) {
-                    delay(dropService.expiryDuration())
+                    delay(dropService.dropExpiryDuration())
                     response.edit {
                         components = mutableListOf()
                     }

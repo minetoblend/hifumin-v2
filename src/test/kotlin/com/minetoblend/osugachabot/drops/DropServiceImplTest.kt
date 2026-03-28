@@ -197,6 +197,8 @@ class DropServiceImplTest {
 
     @Test
     fun `claimCard returns DropNotFound for unknown drop id`() {
+        jdbcTemplate.update("DELETE FROM cooldowns")
+
         val result = dropService.claimCard(DropId(Long.MAX_VALUE), 0, UserId(1L))
 
         assertIs<ClaimResult.DropNotFound>(result)
@@ -239,5 +241,44 @@ class DropServiceImplTest {
         assertIs<ClaimResult.Claimed>(result2)
         assertEquals(user1, result1.drop.cards[0].claimedBy)
         assertEquals(user2, result2.drop.cards[1].claimedBy)
+    }
+
+    @Test
+    fun `claimCard returns OnCooldown when same user claims again within 1 minute`() {
+        val drop = createDrop()
+        val userId = UserId(42L)
+
+        dropService.claimCard(drop.id, 0, userId)
+        val result = dropService.claimCard(drop.id, 1, userId)
+
+        assertIs<ClaimResult.OnCooldown>(result)
+        assertTrue(result.remaining.isPositive())
+    }
+
+    @Test
+    fun `claimCard allows different users to claim without cooldown interference`() {
+        val drop = createDrop()
+
+        dropService.claimCard(drop.id, 0, UserId(1L))
+        val result = dropService.claimCard(drop.id, 1, UserId(2L))
+
+        assertIs<ClaimResult.Claimed>(result)
+    }
+
+    @Test
+    fun `claimCard returns Claimed after claim cooldown has elapsed`() {
+        val drop = createDrop()
+        val userId = UserId(42L)
+
+        dropService.claimCard(drop.id, 0, userId)
+        jdbcTemplate.update(
+            "UPDATE cooldowns SET last_used_at = ? WHERE type = 'claim' AND user_id = ?",
+            Timestamp.from(Instant.now().minusSeconds(61)),
+            userId.value,
+        )
+
+        val result = dropService.claimCard(drop.id, 1, userId)
+
+        assertIs<ClaimResult.Claimed>(result)
     }
 }
