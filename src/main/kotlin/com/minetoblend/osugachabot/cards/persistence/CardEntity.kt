@@ -1,4 +1,4 @@
-package com.minetoblend.osugachabot.cards
+package com.minetoblend.osugachabot.cards.persistence
 
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue

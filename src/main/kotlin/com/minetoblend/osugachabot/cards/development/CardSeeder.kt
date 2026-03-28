@@ -1,5 +1,7 @@
-package com.minetoblend.osugachabot.cards
+package com.minetoblend.osugachabot.cards.development
 
+import com.minetoblend.osugachabot.cards.persistence.CardEntity
+import com.minetoblend.osugachabot.cards.persistence.CardRepository
 import org.slf4j.LoggerFactory
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
