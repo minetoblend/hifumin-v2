@@ -4,6 +4,8 @@ plugins {
     id("org.springframework.boot") version "4.0.5"
     id("io.spring.dependency-management") version "1.1.7"
     kotlin("plugin.jpa") version "2.3.20"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.3.20"
+    id("org.jetbrains.compose") version "1.9.0"
 }
 
 group = "com.minetoblend"
@@ -24,6 +26,7 @@ configurations {
 
 repositories {
     mavenCentral()
+    google()
 }
 
 dependencies {
@@ -55,6 +58,8 @@ dependencies {
     implementation("io.opentelemetry.instrumentation:opentelemetry-jdbc:2.16.0-alpha")
     implementation("io.opentelemetry:opentelemetry-extension-kotlin")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
+    implementation(compose.desktop.currentOs)
+    implementation(compose.material3)
 }
 
 kotlin {

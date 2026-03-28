@@ -7,13 +7,18 @@ import com.minetoblend.osugachabot.users.UserId
 import com.minetoblend.osugachabot.drops.Drop
 import com.minetoblend.osugachabot.drops.DropService
 import com.minetoblend.osugachabot.drops.DroppedCard
+import com.minetoblend.osugachabot.graphics.CardRenderer
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.behavior.interaction.respondPublic
 import dev.kord.core.behavior.interaction.response.edit
+import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.rest.builder.component.ActionRowBuilder
 import dev.kord.rest.builder.message.actionRow
+import dev.kord.rest.builder.message.addFile
+import io.ktor.client.request.forms.ChannelProvider
+import io.ktor.utils.io.ByteReadChannel
 import io.opentelemetry.context.Context
 import io.opentelemetry.extension.kotlin.asContextElement
 import kotlinx.coroutines.CoroutineScope
@@ -33,6 +38,7 @@ private fun Duration.toDiscordRelativeTimestamp(): String {
 class DropCommand(
     private val dropService: DropService,
     @Qualifier("discordScope") private val scope: CoroutineScope,
+    private val cardRenderer: CardRenderer,
 ) : SlashCommand {
     override val name = "drop"
     override val description = "Drop 3 cards for players to claim"
@@ -45,10 +51,23 @@ class DropCommand(
                     content = "Drops are on cooldown! Try again ${result.remaining.toDiscordRelativeTimestamp()}."
                 }
             }
+
             is CreateDropResult.Created -> {
                 val drop = result.drop
-                val response = interaction.respondPublic {
+                val ack = interaction.deferPublicResponse()
+
+                val image = cardRenderer.renderCards(drop.cards.map { it.card })
+
+                val response = ack.respond {
+
+
+                    addFile(
+                        name = "cards.png",
+                        contentProvider = ChannelProvider { ByteReadChannel(image) }
+                    )
+
                     content = "${interaction.user.mention} Dropping 3 cards..."
+
                     actionRow {
                         drop.cards.forEach { droppedCard ->
                             dropCardButton(drop, droppedCard)
