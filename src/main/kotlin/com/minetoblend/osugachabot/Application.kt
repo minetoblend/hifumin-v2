@@ -4,8 +4,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-class OsugachabotApplication
+class Application
 
 fun main(args: Array<String>) {
-    runApplication<OsugachabotApplication>(*args)
+    runApplication<Application>(*args)
 }
