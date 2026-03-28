@@ -20,7 +20,6 @@ import com.minetoblend.osugachabot.drops.persistence.DropEntity
 import com.minetoblend.osugachabot.drops.persistence.DropRepository
 import com.minetoblend.osugachabot.users.UserId
 import org.springframework.data.repository.findByIdOrNull
-import java.time.Instant
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import kotlin.time.Clock
@@ -43,13 +42,12 @@ class DropServiceImpl(
         val entity = dropRepository.save(DropEntity())
 
         cards.forEachIndexed { index, card ->
-            val condition = CardCondition.entries.random()
             entity.cards.add(
                 DroppedCardEntity(
                     drop = entity,
                     cardIndex = index,
                     card = cardRepository.getReferenceById(card.id.value),
-                    condition = condition,
+                    condition = rollRandomCondition(),
                 )
             )
         }
@@ -81,6 +79,17 @@ class DropServiceImpl(
         )
 
         return ClaimResult.Claimed(drop.toDomain(), replica.toDomain())
+    }
+
+    private fun rollRandomCondition(): CardCondition {
+        val distribution = listOf<CardCondition>(
+            Mint,
+            Good, Good,
+            Poor, Poor, Poor,
+            Damaged, Damaged,
+        )
+
+        return distribution.random()
     }
 
     private fun DropEntity.toDomain() = Drop(
