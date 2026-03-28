@@ -15,7 +15,9 @@ import io.opentelemetry.instrumentation.ktor.v3_0.KtorClientTelemetry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import org.springframework.beans.factory.DisposableBean
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
 import org.springframework.stereotype.Component
@@ -27,9 +29,16 @@ class DiscordBot(
     private val buttonHandlers: List<ButtonInteractionHandler>,
     private val dispatcher: SlashCommandDispatcher,
     private val openTelemetry: OpenTelemetry,
-) : ApplicationRunner {
+) : ApplicationRunner, DisposableBean {
 
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private val job = SupervisorJob()
+    private val scope = CoroutineScope(Dispatchers.Default + job)
+    private var kord: Kord? = null
+
+    override fun destroy() {
+        kord?.let { scope.launch { it.logout() } }
+        scope.cancel()
+    }
 
     override fun run(args: ApplicationArguments) {
         scope.launch {
@@ -45,6 +54,7 @@ class DiscordBot(
                     }
                 }
             }
+            this@DiscordBot.kord = kord
 
             @Suppress("UnusedFlow")
             kord.createGlobalApplicationCommands {
