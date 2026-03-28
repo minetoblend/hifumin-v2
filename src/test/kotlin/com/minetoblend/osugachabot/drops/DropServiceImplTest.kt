@@ -38,11 +38,11 @@ class DropServiceImplTest {
         repeat(count) { i -> cardRepository.save(CardEntity("Player$i", "US", null, i * 10, i + 1)) }
     }
 
-    private fun createDrop(): Drop {
+    private fun createDrop(userId: UserId = UserId(1L)): Drop {
         seedCards()
         jdbcTemplate.update("DELETE FROM dropped_cards")
         jdbcTemplate.update("DELETE FROM drops")
-        return (dropService.createDrop() as CreateDropResult.Created).drop
+        return (dropService.createDrop(userId) as CreateDropResult.Created).drop
     }
 
     @Test
@@ -51,7 +51,7 @@ class DropServiceImplTest {
         jdbcTemplate.update("DELETE FROM dropped_cards")
         jdbcTemplate.update("DELETE FROM drops")
 
-        val result = dropService.createDrop()
+        val result = dropService.createDrop(UserId(1L))
 
         assertIs<CreateDropResult.Created>(result)
         assertEquals(3, result.drop.cards.size)
@@ -64,7 +64,7 @@ class DropServiceImplTest {
         jdbcTemplate.update("DELETE FROM dropped_cards")
         jdbcTemplate.update("DELETE FROM drops")
 
-        val result = dropService.createDrop()
+        val result = dropService.createDrop(UserId(1L))
 
         assertIs<CreateDropResult.Created>(result)
         assertNotNull(dropRepository.findById(result.drop.id.value).orElse(null))
@@ -76,7 +76,7 @@ class DropServiceImplTest {
         jdbcTemplate.update("DELETE FROM dropped_cards")
         jdbcTemplate.update("DELETE FROM drops")
 
-        val result = dropService.createDrop()
+        val result = dropService.createDrop(UserId(1L))
 
         assertIs<CreateDropResult.Created>(result)
         assertEquals(listOf(0, 1, 2), result.drop.cards.map { it.index })
@@ -88,20 +88,21 @@ class DropServiceImplTest {
         jdbcTemplate.update("DELETE FROM dropped_cards")
         jdbcTemplate.update("DELETE FROM drops")
 
-        val result = dropService.createDrop()
+        val result = dropService.createDrop(UserId(1L))
 
         assertIs<CreateDropResult.Created>(result)
         result.drop.cards.forEach { assertNull(it.claimedBy) }
     }
 
     @Test
-    fun `createDrop returns OnCooldown when called again within 10 minutes`() {
+    fun `createDrop returns OnCooldown when same user calls again within 10 minutes`() {
         seedCards()
         jdbcTemplate.update("DELETE FROM dropped_cards")
         jdbcTemplate.update("DELETE FROM drops")
+        val userId = UserId(1L)
 
-        dropService.createDrop()
-        val result = dropService.createDrop()
+        dropService.createDrop(userId)
+        val result = dropService.createDrop(userId)
 
         assertIs<CreateDropResult.OnCooldown>(result)
         assertTrue(result.remaining.isPositive())
@@ -112,11 +113,24 @@ class DropServiceImplTest {
         seedCards()
         jdbcTemplate.update("DELETE FROM dropped_cards")
         jdbcTemplate.update("DELETE FROM drops")
+        val userId = UserId(1L)
 
-        dropService.createDrop()
+        dropService.createDrop(userId)
         jdbcTemplate.update("UPDATE drops SET created_at = ?", Timestamp.from(Instant.now().minusSeconds(601)))
 
-        val result = dropService.createDrop()
+        val result = dropService.createDrop(userId)
+
+        assertIs<CreateDropResult.Created>(result)
+    }
+
+    @Test
+    fun `createDrop allows different user to drop during another user's cooldown`() {
+        seedCards()
+        jdbcTemplate.update("DELETE FROM dropped_cards")
+        jdbcTemplate.update("DELETE FROM drops")
+
+        dropService.createDrop(UserId(1L))
+        val result = dropService.createDrop(UserId(2L))
 
         assertIs<CreateDropResult.Created>(result)
     }

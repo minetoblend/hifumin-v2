@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0004-add-created-by-user-id-to-drops
+      author: liquibase
+      changes:
+        - addColumn:
+            tableName: drops
+            columns:
+              - column:
+                  name: created_by_user_id
+                  type: BIGINT

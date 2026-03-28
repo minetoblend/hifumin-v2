@@ -3,6 +3,7 @@ package com.minetoblend.osugachabot.discord.application.drop
 import com.minetoblend.osugachabot.discord.SlashCommand
 import com.minetoblend.osugachabot.discord.interactionButton
 import com.minetoblend.osugachabot.drops.CreateDropResult
+import com.minetoblend.osugachabot.users.UserId
 import com.minetoblend.osugachabot.drops.Drop
 import com.minetoblend.osugachabot.drops.DropService
 import com.minetoblend.osugachabot.drops.DroppedCard
@@ -39,7 +40,8 @@ class DropCommand(
     override val description = "Drop 3 cards for players to claim"
 
     override suspend fun ChatInputCommandInteractionCreateEvent.handle() {
-        when (val result = dropService.createDrop()) {
+        val userId = UserId(interaction.user.id.value.toLong())
+        when (val result = dropService.createDrop(userId)) {
             is CreateDropResult.OnCooldown -> {
                 interaction.respondEphemeral {
                     content = "Drops are on cooldown! Try again in ${result.remaining.formatMinutesSeconds()}."

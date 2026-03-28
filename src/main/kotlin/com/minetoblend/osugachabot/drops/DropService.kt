@@ -8,7 +8,7 @@ interface DropService {
     fun expiryDuration(): Duration
     fun cooldownDuration(): Duration
 
-    fun createDrop(): CreateDropResult
+    fun createDrop(userId: UserId): CreateDropResult
     fun claimCard(dropId: DropId, cardIndex: Int, userId: UserId): ClaimResult
 }
 

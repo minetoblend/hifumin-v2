@@ -28,4 +28,7 @@ class DropEntity {
     @Column(nullable = false, updatable = false)
     var createdAt: Instant = Instant.now()
 
+    @Column(nullable = true)
+    var createdByUserId: Long? = null
+
 }

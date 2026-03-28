@@ -40,8 +40,8 @@ class DropServiceImpl(
     override fun cooldownDuration(): Duration = 10.minutes
 
     @Transactional
-    override fun createDrop(): CreateDropResult {
-        val lastDrop = dropRepository.findTopByOrderByCreatedAtDesc()
+    override fun createDrop(userId: UserId): CreateDropResult {
+        val lastDrop = dropRepository.findTopByCreatedByUserIdOrderByCreatedAtDesc(userId.value)
         if (lastDrop != null) {
             val elapsed = Clock.System.now() - lastDrop.createdAt.toKotlinInstant()
             val remaining = cooldownDuration() - elapsed
@@ -51,7 +51,7 @@ class DropServiceImpl(
         }
 
         val cards = cardService.getRandomCards(DROP_SIZE)
-        val entity = dropRepository.save(DropEntity())
+        val entity = dropRepository.save(DropEntity().also { it.createdByUserId = userId.value })
 
         cards.forEachIndexed { index, card ->
             entity.cards.add(
