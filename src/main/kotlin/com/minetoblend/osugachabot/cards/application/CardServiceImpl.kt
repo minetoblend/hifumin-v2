@@ -2,6 +2,7 @@ package com.minetoblend.osugachabot.cards.application
 
 import com.minetoblend.osugachabot.cards.Card
 import com.minetoblend.osugachabot.cards.CardId
+import com.minetoblend.osugachabot.cards.CardRarity
 import com.minetoblend.osugachabot.cards.CardService
 import com.minetoblend.osugachabot.cards.persistence.CardEntity
 import com.minetoblend.osugachabot.cards.persistence.CardRepository
@@ -20,6 +21,12 @@ class CardServiceImpl(
 
     override fun getRandomCards(count: Int): List<Card> =
         cards.getRandomCards(count).map { it.toDomain() }
+
+    override fun getRandomCardsWithMinimumRarity(count: Int, rarity: CardRarity): List<Card> {
+        val rarities = CardRarity.entries.filter { it >= rarity }
+        return cards.getRandomCardsWithRarityIn(count, rarities).map { it.toDomain() }
+    }
+
 
     private fun CardEntity.toDomain(): Card = Card(
         CardId(id),

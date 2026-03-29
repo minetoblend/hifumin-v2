@@ -10,6 +10,9 @@ interface DropService {
     fun dropExpiryDuration(): Duration
 
     fun createDrop(userId: UserId): CreateDropResult
+
+    fun createSuperDrop(userId: UserId): Drop
+
     fun claimCard(dropId: DropId, cardIndex: Int, userId: UserId): ClaimResult
 }
 

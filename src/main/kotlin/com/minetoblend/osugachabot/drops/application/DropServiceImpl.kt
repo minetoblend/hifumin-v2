@@ -27,6 +27,8 @@ import com.minetoblend.osugachabot.users.toUserId
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.security.SecureRandom
+import kotlin.random.asKotlinRandom
 import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -68,6 +70,31 @@ class DropServiceImpl(
         }
 
         return CreateDropResult.Created(dropRepository.save(entity).toDomain())
+    }
+
+    @Transactional
+    override fun createSuperDrop(userId: UserId): Drop {
+        val cards = cardService.getRandomCards(SUPER_DROP_SIZE).toMutableList()
+
+        if (cards.none { it.rarity >= Rare }) {
+            val (rareCard) = cardService.getRandomCardsWithMinimumRarity(1, Rare)
+
+            cards[cards.indices.random()] = rareCard
+        }
+
+        val entity = dropRepository.save(DropEntity().also { it.createdByUserId = userId.value })
+        cards.forEachIndexed { index, card ->
+            entity.cards.add(
+                DroppedCardEntity(
+                    drop = entity,
+                    cardIndex = index,
+                    card = cardRepository.getReferenceById(card.id.value),
+                    condition = rollRandomCondition(),
+                )
+            )
+        }
+
+        return dropRepository.save(entity).toDomain()
     }
 
     @Transactional
@@ -144,5 +171,6 @@ class DropServiceImpl(
 
     companion object {
         private const val DROP_SIZE = 3
+        private const val SUPER_DROP_SIZE = 10
     }
 }

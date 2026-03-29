@@ -1,6 +1,7 @@
 package com.minetoblend.osugachabot.graphics
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Alignment
@@ -47,8 +48,11 @@ class CardRenderer(
     }
 
     suspend fun renderCards(cards: List<Card>): ByteArray {
-        val width = (cards.size * (CARD_WIDTH + SPACING)) - SPACING + PADDING * 2
-        val height = CARD_HEIGHT + PADDING * 2
+        val columns = cards.size.coerceAtMost(5)
+        val rows = (cards.size + 4) / 5
+
+        val width = (columns * (CARD_WIDTH + SPACING)) - SPACING + PADDING * 2
+        val height = rows * (CARD_HEIGHT + SPACING) - SPACING + PADDING * 2
 
         val cardsWithAvatars = coroutineScope {
             cards.map { card ->
@@ -60,9 +64,9 @@ class CardRenderer(
 
 
         val image = renderComposeScene(width = width, height = height) {
-            Row(
+            FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(SPACING.dp, Alignment.CenterHorizontally),
-                verticalAlignment = Alignment.CenterVertically,
+                verticalArrangement = Arrangement.spacedBy(SPACING.dp, Alignment.CenterVertically),
                 modifier = Modifier.padding(PADDING.dp)
             ) {
                 for ((card, avatar) in cardsWithAvatars) {

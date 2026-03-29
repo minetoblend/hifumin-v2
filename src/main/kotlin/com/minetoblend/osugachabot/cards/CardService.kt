@@ -6,4 +6,6 @@ interface CardService {
     fun findByUsername(username: String): Card?
 
     fun getRandomCards(count: Int): List<Card>
+
+    fun getRandomCardsWithMinimumRarity(count: Int, rarity: CardRarity): List<Card>
 }
