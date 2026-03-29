@@ -39,4 +39,7 @@ class CardReplicaEntity(
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     var createdAt: Instant = Instant.now()
+
+    @Column(name = "burn_value")
+    var burnValue: Int? = null
 }

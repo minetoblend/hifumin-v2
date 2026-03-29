@@ -1,9 +1,7 @@
 package com.minetoblend.osugachabot.cards
 
-import com.minetoblend.osugachabot.cards.CardCondition.*
+import com.minetoblend.osugachabot.cards.application.computeBurnValue
 import com.minetoblend.osugachabot.users.UserId
-import kotlin.math.roundToInt
-import kotlin.math.sqrt
 
 @JvmInline
 value class CardReplicaId(val value: Long) {
@@ -41,17 +39,4 @@ data class CardReplica(
 )
 
 val CardReplica.burnValue: Int
-    get() {
-        val multiplier = when (condition) {
-            Mint -> 1f
-            Good -> 0.5f
-            Poor -> 0.2f
-            Damaged -> 0.1f
-        }
-
-        val baseValue = 3 * sqrt(card.followerCount.toFloat())
-
-        val cardValue = (50 + baseValue) * multiplier
-
-        return cardValue.roundToInt().coerceAtLeast(1)
-    }
+    get() = computeBurnValue(card.followerCount, condition)

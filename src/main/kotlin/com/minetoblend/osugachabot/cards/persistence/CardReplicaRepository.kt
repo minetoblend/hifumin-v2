@@ -11,4 +11,6 @@ interface CardReplicaRepository : JpaRepository<CardReplicaEntity, Long> {
     fun countByUserId(userId: Long): Int
 
     fun findByUserId(userId: Long, pageable: Pageable): Page<CardReplicaEntity>
+
+    fun findByBurnValueIsNull(): List<CardReplicaEntity>
 }

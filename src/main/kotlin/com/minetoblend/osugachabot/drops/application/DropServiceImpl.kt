@@ -1,6 +1,7 @@
 package com.minetoblend.osugachabot.drops.application
 
 import com.minetoblend.osugachabot.cards.*
+import com.minetoblend.osugachabot.cards.application.computeBurnValue
 import com.minetoblend.osugachabot.cards.persistence.CardEntity
 import com.minetoblend.osugachabot.cards.persistence.CardReplicaEntity
 import com.minetoblend.osugachabot.cards.persistence.CardReplicaRepository
@@ -115,13 +116,13 @@ class DropServiceImpl(
 
         droppedCard.claimedByUserId = userId.value
 
-        val replica = cardReplicaRepository.save(
-            CardReplicaEntity(
-                card = droppedCard.card,
-                userId = userId.value,
-                condition = droppedCard.condition,
-            )
-        )
+        val replicaEntity = CardReplicaEntity(
+            card = droppedCard.card,
+            userId = userId.value,
+            condition = droppedCard.condition,
+        ).also { it.burnValue = computeBurnValue(droppedCard.card.followerCount, droppedCard.condition) }
+
+        val replica = cardReplicaRepository.save(replicaEntity)
 
         return ClaimResult.Claimed(drop.toDomain(), replica.toDomain())
     }

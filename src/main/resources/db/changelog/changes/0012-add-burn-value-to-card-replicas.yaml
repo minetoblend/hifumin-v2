@@ -1,0 +1,19 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0012-add-burn-value-to-card-replicas
+      author: liquibase
+      changes:
+        - addColumn:
+            tableName: card_replicas
+            columns:
+              - column:
+                  name: burn_value
+                  type: INT
+                  constraints:
+                    nullable: true
+        - createIndex:
+            tableName: card_replicas
+            indexName: idx_burn_value
+            columns:
+              - column:
+                  name: burn_value
