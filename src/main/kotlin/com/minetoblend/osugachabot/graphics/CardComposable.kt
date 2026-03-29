@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Surface
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,7 +48,8 @@ fun CardComposablePreview() {
         title = null,
         followerCount = 1000,
         globalRank = 1000,
-        userId = 3
+        userId = 3,
+        rarity = Common,
     )
 
     CardComposable(card)
@@ -60,10 +62,7 @@ fun CardComposable(
     modifier: Modifier = Modifier,
 ) {
     val shape = RoundedCornerShape(12.dp)
-    val colors = CardColors(
-        primary = Color(0xFF3DF37A),
-        secondary = Color(0xFF3DCBF3),
-    )
+    val colors = CardColors.forRarity(card.rarity)
 
     Box(
         modifier = modifier
@@ -114,7 +113,7 @@ private fun CardHeader(card: Card, colors: CardColors) {
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                androidx.compose.material.Text(
+                Text(
                     text = card.username,
                     style = TextStyle(
                         color = colors.onPrimary,
@@ -176,8 +175,6 @@ private fun CardImage(avatar: ImageBitmap?) {
 
 @Composable
 private fun CardFooter(card: Card, colors: CardColors) {
-    val rarity = CardRarity.Uncommon
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -192,8 +189,8 @@ private fun CardFooter(card: Card, colors: CardColors) {
                 color = Color.Transparent,
                 shape = RoundedCornerShape(6.dp),
             ) {
-                androidx.compose.material.Text(
-                    text = rarity.name.uppercase(),
+                Text(
+                    text = card.rarity.name.uppercase(),
                     style = TextStyle(
                         brush = Brush.horizontalGradient(
                             listOf(colors.primary, colors.secondary)
@@ -208,7 +205,7 @@ private fun CardFooter(card: Card, colors: CardColors) {
 
             if (card.globalRank != null) {
                 Column {
-                    androidx.compose.material.Text(
+                    Text(
                         text = "GLOBAL RANK",
                         style = TextStyle(
                             color = colors.onSurfaceVariant,
@@ -218,7 +215,7 @@ private fun CardFooter(card: Card, colors: CardColors) {
                             letterSpacing = 1.sp
                         )
                     )
-                    androidx.compose.material.Text(
+                    Text(
                         text = "#${String.format("%,d", card.globalRank)}",
                         style = TextStyle(
                             color = colors.onSurface,
@@ -232,29 +229,27 @@ private fun CardFooter(card: Card, colors: CardColors) {
             }
         }
 
-        if (card.followerCount != null) {
-            Column(horizontalAlignment = Alignment.End) {
-                androidx.compose.material.Text(
-                    text = "FOLLOWERS",
-                    style = TextStyle(
-                        color = colors.onSurfaceVariant,
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        fontFamily = FontFamily.Default,
-                        letterSpacing = 1.sp
-                    )
+        Column(horizontalAlignment = Alignment.End) {
+            Text(
+                text = "FOLLOWERS",
+                style = TextStyle(
+                    color = colors.onSurfaceVariant,
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    fontFamily = FontFamily.Default,
+                    letterSpacing = 1.sp
                 )
-                androidx.compose.material.Text(
-                    text = String.format("%,d", card.followerCount),
-                    style = TextStyle(
-                        color = colors.onSurface,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        fontFamily = FontFamily.Default,
-                        letterSpacing = 0.2.sp
-                    )
+            )
+            Text(
+                text = String.format("%,d", card.followerCount),
+                style = TextStyle(
+                    color = colors.onSurface,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    fontFamily = FontFamily.Default,
+                    letterSpacing = 0.2.sp
                 )
-            }
+            )
         }
     }
 }

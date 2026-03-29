@@ -11,4 +11,5 @@ data class Card(
     var title: String?,
     var followerCount: Int,
     var globalRank: Int?,
+    var rarity: CardRarity,
 )

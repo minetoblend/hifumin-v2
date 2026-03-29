@@ -132,6 +132,7 @@ class DropServiceImpl(
         title = title,
         followerCount = followerCount,
         globalRank = globalRank,
+        rarity = rarity,
     )
 
     private fun CardReplicaEntity.toDomain() = CardReplica(

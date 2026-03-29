@@ -1,6 +1,9 @@
 package com.minetoblend.osugachabot.cards.persistence
 
+import com.minetoblend.osugachabot.cards.CardRarity
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
@@ -22,7 +25,9 @@ class CardEntity(
     var countryCode: String,
     var title: String?,
     var followerCount: Int,
-    var globalRank: Int?
+    var globalRank: Int?,
+    @Enumerated(EnumType.STRING)
+    var rarity: CardRarity = CardRarity.Common,
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

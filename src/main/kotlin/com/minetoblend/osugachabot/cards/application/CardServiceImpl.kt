@@ -25,6 +25,7 @@ class CardServiceImpl(
         countryCode,
         title,
         followerCount,
-        globalRank
+        globalRank,
+        rarity
     )
 }

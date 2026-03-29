@@ -1,5 +1,6 @@
 package com.minetoblend.osugachabot.cards.development
 
+import com.minetoblend.osugachabot.cards.CardRarity
 import com.minetoblend.osugachabot.cards.persistence.CardEntity
 import com.minetoblend.osugachabot.cards.persistence.CardRepository
 import org.slf4j.LoggerFactory
@@ -35,7 +36,8 @@ class CardSeeder(
                     countryCode = it.countryCode,
                     title = it.title,
                     followerCount = it.followerCount,
-                    globalRank = it.rank
+                    globalRank = it.rank,
+                    rarity = CardRarity.fromFollowerCount(it.followerCount)
                 )
             }
         )

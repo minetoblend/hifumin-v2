@@ -11,3 +11,5 @@ databaseChangeLog:
       file: db/changelog/changes/0005-cooldowns.yaml
   - include:
       file: db/changelog/changes/0006-add-user-id-to-cards.yaml
+  - include:
+      file: db/changelog/changes/0007-add-rarity-to-cards.yaml
