@@ -43,12 +43,12 @@ fun CardComposablePreview() {
     val card = Card(
         id = CardId(1),
         username = "Maarvin",
-        countryCode = "JP",
+        countryCode = "AT",
         title = null,
         followerCount = 1000,
         globalRank = 1000,
         userId = 3,
-        rarity = N,
+        rarity = SR,
     )
 
     CardComposable(card)
@@ -126,6 +126,24 @@ private fun CardHeader(card: Card, colors: CardColors) {
             }
         }
 
+        Surface(
+            color = Color.Transparent,
+            shape = RoundedCornerShape(6.dp),
+        ) {
+            Text(
+                text = card.rarity.name.uppercase(),
+                style = TextStyle(
+                    brush = Brush.horizontalGradient(
+                        listOf(colors.primary, colors.secondary)
+                    ),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily.Monospace,
+                    letterSpacing = 0.8.sp
+                )
+            )
+        }
+
 //        if (card is CardInfo.UserCard) {
 //            androidx.compose.material.Text(
 //                text = "#${card.cardId}",
@@ -184,23 +202,7 @@ private fun CardFooter(card: Card, colors: CardColors) {
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Surface(
-                color = Color.Transparent,
-                shape = RoundedCornerShape(6.dp),
-            ) {
-                Text(
-                    text = card.rarity.name.uppercase(),
-                    style = TextStyle(
-                        brush = Brush.horizontalGradient(
-                            listOf(colors.primary, colors.secondary)
-                        ),
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace,
-                        letterSpacing = 0.8.sp
-                    )
-                )
-            }
+
 
             if (card.globalRank != null) {
                 Column {
