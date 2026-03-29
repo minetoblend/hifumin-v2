@@ -70,4 +70,23 @@ class InventoryServiceImplTest {
 
         assertEquals(RemoveItemsResult.InsufficientItems, result)
     }
+
+    @Test
+    fun `getItems returns empty list when user has no items`() {
+        val items = inventoryService.getItems(UserId(900007L))
+
+        assertEquals(emptyList(), items)
+    }
+
+    @Test
+    fun `getItems returns only items with amount greater than zero`() {
+        val userId = UserId(900008L)
+        inventoryService.addItems(userId, ItemType.Gold, 42L)
+
+        val items = inventoryService.getItems(userId)
+
+        assertEquals(1, items.size)
+        assertEquals(ItemType.Gold, items[0].itemType)
+        assertEquals(42L, items[0].amount)
+    }
 }

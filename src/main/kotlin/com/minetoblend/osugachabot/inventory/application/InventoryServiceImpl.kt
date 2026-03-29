@@ -20,6 +20,13 @@ class InventoryServiceImpl(
         return InventoryItem(userId, itemType, entity?.amount ?: 0L)
     }
 
+    override fun getItems(userId: UserId): List<InventoryItem> {
+        return inventoryItemRepository.findByUserId(userId.value)
+            .filter { it.amount > 0 }
+            .sortedBy { it.itemType.ordinal }
+            .map { InventoryItem(userId, it.itemType, it.amount) }
+    }
+
     @Transactional
     override fun addItems(userId: UserId, itemType: ItemType, amount: Long) {
         require(amount > 0) { "amount must be positive" }

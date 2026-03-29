@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface InventoryItemRepository : JpaRepository<InventoryItemEntity, Long> {
     fun findByUserIdAndItemType(userId: Long, itemType: ItemType): InventoryItemEntity?
+    fun findByUserId(userId: Long): List<InventoryItemEntity>
 }

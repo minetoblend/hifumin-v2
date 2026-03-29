@@ -5,6 +5,8 @@ import com.minetoblend.osugachabot.users.UserId
 interface InventoryService {
     fun getItem(userId: UserId, itemType: ItemType): InventoryItem
 
+    fun getItems(userId: UserId): List<InventoryItem>
+
     fun addItems(userId: UserId, itemType: ItemType, amount: Long)
 
     fun removeItems(userId: UserId, itemType: ItemType, amount: Long): RemoveItemsResult
