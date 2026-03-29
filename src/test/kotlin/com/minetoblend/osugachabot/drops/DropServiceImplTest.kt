@@ -165,7 +165,7 @@ class DropServiceImplTest {
         val result = dropService.claimCard(drop.id, 1, userId)
 
         assertIs<ClaimResult.Claimed>(result)
-        assertEquals(userId.value, result.replica.userId)
+        assertEquals(userId, result.replica.userId)
         assertEquals(drop.cards[1].card.id, result.replica.card.id)
         assertEquals(drop.cards[1].condition, result.replica.condition)
     }

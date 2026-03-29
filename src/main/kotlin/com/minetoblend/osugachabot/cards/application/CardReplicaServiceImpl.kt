@@ -4,6 +4,8 @@ import com.minetoblend.osugachabot.cards.*
 import com.minetoblend.osugachabot.cards.persistence.CardEntity
 import com.minetoblend.osugachabot.cards.persistence.CardReplicaEntity
 import com.minetoblend.osugachabot.cards.persistence.CardReplicaRepository
+import com.minetoblend.osugachabot.inventory.InventoryService
+import com.minetoblend.osugachabot.inventory.ItemType
 import com.minetoblend.osugachabot.users.UserId
 import com.minetoblend.osugachabot.users.toUserId
 import org.springframework.data.repository.findByIdOrNull
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Service
 @Service
 class CardReplicaServiceImpl(
     private val cardReplicaRepository: CardReplicaRepository,
+    private val inventoryService: InventoryService,
 ) : CardReplicaService {
     override fun findById(id: CardReplicaId): CardReplica? =
         cardReplicaRepository.findByIdOrNull(id.value)?.toDomain()
@@ -39,8 +42,9 @@ class CardReplicaServiceImpl(
         if (userId != card.userId.toUserId())
             return BurnCardResult.NotOwned
 
+        val replica = card.toDomain()
         cardReplicaRepository.delete(card)
-        // TODO: gain gold
+        inventoryService.addItems(userId, ItemType.Gold, replica.burnValue.toLong())
 
         return BurnCardResult.Success
     }

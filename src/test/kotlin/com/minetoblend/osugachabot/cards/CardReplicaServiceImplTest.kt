@@ -5,6 +5,7 @@ import com.minetoblend.osugachabot.cards.persistence.CardEntity
 import com.minetoblend.osugachabot.cards.persistence.CardRepository
 import com.minetoblend.osugachabot.cards.persistence.CardReplicaEntity
 import com.minetoblend.osugachabot.cards.persistence.CardReplicaRepository
+import com.minetoblend.osugachabot.users.toUserId
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
@@ -35,7 +36,7 @@ class CardReplicaServiceImplTest {
 
         assertNotNull(replica)
         assertEquals(CardReplicaId(entity.id), replica.id)
-        assertEquals(42L, replica.userId)
+        assertEquals(42L.toUserId(), replica.userId)
         assertEquals(CardCondition.Mint, replica.condition)
         assertEquals("ReplicaUser", replica.card.username)
     }
