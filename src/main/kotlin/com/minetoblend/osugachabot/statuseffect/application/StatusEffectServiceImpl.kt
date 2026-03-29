@@ -2,10 +2,12 @@ package com.minetoblend.osugachabot.statuseffect.application
 
 import com.minetoblend.osugachabot.statuseffect.ApplyStatusEffectResult
 import com.minetoblend.osugachabot.statuseffect.StatusEffect
+import com.minetoblend.osugachabot.statuseffect.StatusEffectAppliedEvent
 import com.minetoblend.osugachabot.statuseffect.StatusEffectService
 import com.minetoblend.osugachabot.statuseffect.persistence.ActiveStatusEffectEntity
 import com.minetoblend.osugachabot.statuseffect.persistence.ActiveStatusEffectRepository
 import com.minetoblend.osugachabot.users.UserId
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import kotlin.time.Clock
@@ -16,13 +18,14 @@ import kotlin.time.toKotlinInstant
 @Service
 class StatusEffectServiceImpl(
     private val repository: ActiveStatusEffectRepository,
+    private val eventPublisher: ApplicationEventPublisher,
 ) : StatusEffectService {
 
     @Transactional
     override fun applyEffect(userId: UserId, effect: StatusEffect, duration: Duration): ApplyStatusEffectResult {
         val now = Clock.System.now()
         val entity = repository.findByUserIdAndEffect(userId.value, effect)
-        return if (entity != null) {
+        val result = if (entity != null) {
             val currentExpiry = entity.expiresAt.toKotlinInstant()
             val expiresAt = maxOf(currentExpiry, now) + duration
 
@@ -43,6 +46,8 @@ class StatusEffectServiceImpl(
 
             ApplyStatusEffectResult(expiresAt)
         }
+        eventPublisher.publishEvent(StatusEffectAppliedEvent(userId, effect))
+        return result
     }
 
     override fun isActive(userId: UserId, effect: StatusEffect): Boolean {

@@ -16,6 +16,7 @@ import com.minetoblend.osugachabot.cooldown.CooldownType
 import com.minetoblend.osugachabot.drops.ClaimResult
 import com.minetoblend.osugachabot.drops.CreateDropResult
 import com.minetoblend.osugachabot.drops.Drop
+import com.minetoblend.osugachabot.drops.DropCreatedEvent
 import com.minetoblend.osugachabot.drops.DropId
 import com.minetoblend.osugachabot.drops.DropService
 import com.minetoblend.osugachabot.drops.DroppedCard
@@ -24,6 +25,7 @@ import com.minetoblend.osugachabot.drops.persistence.DropEntity
 import com.minetoblend.osugachabot.drops.persistence.DropRepository
 import com.minetoblend.osugachabot.users.UserId
 import com.minetoblend.osugachabot.users.toUserId
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -41,6 +43,7 @@ class DropServiceImpl(
     private val dropRepository: DropRepository,
     private val cardReplicaRepository: CardReplicaRepository,
     private val cooldownService: CooldownService,
+    private val eventPublisher: ApplicationEventPublisher,
 ) : DropService {
     override fun dropCooldownDuration(): Duration = cooldownService.durationFor(DROP)
 
@@ -69,7 +72,9 @@ class DropServiceImpl(
             )
         }
 
-        return CreateDropResult.Created(dropRepository.save(entity).toDomain())
+        val drop = dropRepository.save(entity).toDomain()
+        eventPublisher.publishEvent(DropCreatedEvent(userId))
+        return CreateDropResult.Created(drop)
     }
 
     @Transactional

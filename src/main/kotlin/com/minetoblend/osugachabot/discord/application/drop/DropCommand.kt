@@ -81,6 +81,7 @@ class DropCommand(
                         components = mutableListOf()
                     }
                 }
+
             }
         }
     }
