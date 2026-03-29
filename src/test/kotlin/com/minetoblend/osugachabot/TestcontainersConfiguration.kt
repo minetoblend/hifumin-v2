@@ -20,6 +20,7 @@ class TestcontainersConfiguration {
     @ServiceConnection
     fun mysqlContainer(): MySQLContainer {
         return MySQLContainer(DockerImageName.parse("mysql:latest"))
+            .withUrlParam("connectionTimeZone", "UTC")
     }
 
 }
