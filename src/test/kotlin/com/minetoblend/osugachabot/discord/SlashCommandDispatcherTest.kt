@@ -62,7 +62,7 @@ class SlashCommandDispatcherTest {
 
         val timer = registry.find("discord.slash_command.duration").tag("command", "ping").timer()
         assertNotNull(timer)
-        assertEquals(3, timer!!.count())
+        assertEquals(3, timer.count())
     }
 
     @Test

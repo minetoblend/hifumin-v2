@@ -190,7 +190,7 @@ class CooldownServiceImplTest {
 
         assertIs<CooldownResult.Ready>(first)
         assertIs<CooldownResult.OnCooldown>(second)
-        assertTrue((second as CooldownResult.OnCooldown).remaining.isPositive())
+        assertTrue(second.remaining.isPositive())
     }
 
     @Test
