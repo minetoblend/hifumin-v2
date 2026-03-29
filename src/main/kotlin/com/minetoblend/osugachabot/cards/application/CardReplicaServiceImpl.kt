@@ -8,6 +8,8 @@ import com.minetoblend.osugachabot.inventory.InventoryService
 import com.minetoblend.osugachabot.inventory.ItemType
 import com.minetoblend.osugachabot.users.UserId
 import com.minetoblend.osugachabot.users.toUserId
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
@@ -21,6 +23,13 @@ class CardReplicaServiceImpl(
 
     override fun findLatestByUserId(userId: UserId): CardReplica? =
         cardReplicaRepository.findFirstByUserIdOrderByCreatedAtDesc(userId.value)?.toDomain()
+
+    override fun getCardCount(userId: UserId): Int =
+        cardReplicaRepository.countByUserId(userId.value)
+
+    override fun findByUserId(userId: UserId, pageable: Pageable): Page<CardReplica> {
+        return cardReplicaRepository.findByUserId(userId.value, pageable).map { it.toDomain() }
+    }
 
     override fun findOwnedCardOrLatest(id: CardReplicaId?, userId: UserId): OwnedCardResult {
         val card = when {
