@@ -5,6 +5,7 @@ import com.minetoblend.osugachabot.discord.SlashCommand
 import com.minetoblend.osugachabot.inventory.InventoryService
 import com.minetoblend.osugachabot.inventory.ItemType
 import com.minetoblend.osugachabot.inventory.RemoveItemsResult
+import com.minetoblend.osugachabot.inventory.prettyName
 import com.minetoblend.osugachabot.users.toUserId
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
@@ -29,7 +30,7 @@ class UseCommand(
         string("item", "The item to use") {
             required = true
             consumableItemHandlers.forEach { handler ->
-                choice(handler.itemType.name, handler.itemType.name)
+                choice(handler.itemType.prettyName, handler.itemType.name)
             }
         }
     }
@@ -41,10 +42,10 @@ class UseCommand(
         val handler = handlersByItemType[itemType] ?: return
 
         when (inventoryService.removeItems(userId, itemType, 1)) {
-            RemoveItemsResult.InsufficientItems -> interaction.respondEphemeral {
+            InsufficientItems -> interaction.respondEphemeral {
                 content = "You don't have any **${itemType.name}** to use!"
             }
-            RemoveItemsResult.Success -> with(handler) { handle(userId) }
+            Success -> with(handler) { handle(userId) }
         }
     }
 }

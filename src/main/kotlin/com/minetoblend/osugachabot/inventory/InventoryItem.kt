@@ -7,3 +7,7 @@ data class InventoryItem(
     val itemType: ItemType,
     val amount: Long,
 )
+
+val InventoryItem.icon get() = itemType.icon
+val InventoryItem.name get() = itemType.prettyName
+val InventoryItem.description get() = itemType.description

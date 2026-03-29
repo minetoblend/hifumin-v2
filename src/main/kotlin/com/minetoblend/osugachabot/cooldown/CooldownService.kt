@@ -10,6 +10,7 @@ enum class CooldownType(val value: String) {
 
 interface CooldownService {
     fun durationFor(type: CooldownType): Duration
+    fun durationFor(type: CooldownType, userId: UserId): Duration = durationFor(type)
 
     fun checkCooldown(userId: UserId, type: CooldownType): CooldownResult
     fun recordCooldown(userId: UserId, type: CooldownType)

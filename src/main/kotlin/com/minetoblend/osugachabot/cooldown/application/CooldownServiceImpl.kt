@@ -5,6 +5,8 @@ import com.minetoblend.osugachabot.cooldown.CooldownService
 import com.minetoblend.osugachabot.cooldown.CooldownType
 import com.minetoblend.osugachabot.cooldown.persistence.CooldownEntity
 import com.minetoblend.osugachabot.cooldown.persistence.CooldownRepository
+import com.minetoblend.osugachabot.statuseffect.StatusEffect
+import com.minetoblend.osugachabot.statuseffect.StatusEffectService
 import com.minetoblend.osugachabot.users.UserId
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -17,11 +19,21 @@ import kotlin.time.toKotlinInstant
 @Service
 class CooldownServiceImpl(
     private val cooldownRepository: CooldownRepository,
+    private val statusEffectService: StatusEffectService,
 ) : CooldownService {
 
     override fun durationFor(type: CooldownType): Duration = when (type) {
         CooldownType.DROP -> 10.minutes
         CooldownType.CLAIM -> 1.minutes
+    }
+
+    override fun durationFor(type: CooldownType, userId: UserId): Duration {
+        val base = durationFor(type)
+        return when (type) {
+            CooldownType.DROP ->
+                if (statusEffectService.isActive(userId, StatusEffect.DropCooldownReduction)) base * 0.5 else base
+            else -> base
+        }
     }
 
     @Transactional
@@ -30,7 +42,7 @@ class CooldownServiceImpl(
             ?: return CooldownResult.Ready
 
         val elapsed = Clock.System.now() - entity.lastUsedAt.toKotlinInstant()
-        val remaining = durationFor(type) - elapsed
+        val remaining = durationFor(type, userId) - elapsed
         return if (remaining.isPositive()) CooldownResult.OnCooldown(remaining) else CooldownResult.Ready
     }
 
@@ -51,7 +63,7 @@ class CooldownServiceImpl(
         val entity = cooldownRepository.findByUserIdAndType(userId.value, type.value)
 
         if (entity != null) {
-            val remaining = durationFor(type) - (now - entity.lastUsedAt.toKotlinInstant())
+            val remaining = durationFor(type, userId) - (now - entity.lastUsedAt.toKotlinInstant())
             if (remaining.isPositive()) return CooldownResult.OnCooldown(remaining)
             entity.lastUsedAt = now.toJavaInstant()
         } else {

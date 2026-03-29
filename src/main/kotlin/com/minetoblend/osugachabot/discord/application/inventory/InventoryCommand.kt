@@ -2,9 +2,9 @@ package com.minetoblend.osugachabot.discord.application.inventory
 
 import com.minetoblend.osugachabot.discord.SlashCommand
 import com.minetoblend.osugachabot.inventory.InventoryService
-import com.minetoblend.osugachabot.inventory.ItemType
+import com.minetoblend.osugachabot.inventory.icon
+import com.minetoblend.osugachabot.inventory.name
 import com.minetoblend.osugachabot.users.toUserId
-import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.behavior.interaction.respondPublic
 import dev.kord.core.entity.effectiveName
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
@@ -30,11 +30,7 @@ class InventoryCommand(
                     items.all { it.amount == 0L } -> "Your inventory is empty."
                     else -> buildString {
                         for (item in items) {
-                            val icon = when (item.itemType) {
-                                Gold -> ":money_bag:"
-                            }
-
-                            appendLine("$icon **${item.itemType}**: ${item.amount}")
+                            appendLine("${item.icon} ${item.amount} · **${item.name}**")
                         }
                     }
                 }

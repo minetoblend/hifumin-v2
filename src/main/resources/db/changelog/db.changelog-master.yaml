@@ -15,3 +15,5 @@ databaseChangeLog:
       file: db/changelog/changes/0007-add-rarity-to-cards.yaml
   - include:
       file: db/changelog/changes/0008-inventory.yaml
+  - include:
+      file: db/changelog/changes/0009-status-effects.yaml

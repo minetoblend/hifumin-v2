@@ -1,6 +1,8 @@
 package com.minetoblend.osugachabot.cooldown
 
 import com.minetoblend.osugachabot.TestcontainersConfiguration
+import com.minetoblend.osugachabot.statuseffect.StatusEffect
+import com.minetoblend.osugachabot.statuseffect.StatusEffectService
 import com.minetoblend.osugachabot.users.UserId
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -11,6 +13,7 @@ import java.time.Instant
 import kotlin.test.Test
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.hours
 
 @Import(TestcontainersConfiguration::class)
 @SpringBootTest
@@ -18,6 +21,9 @@ class CooldownServiceImplTest {
 
     @Autowired
     private lateinit var cooldownService: CooldownService
+
+    @Autowired
+    private lateinit var statusEffectService: StatusEffectService
 
     @Autowired
     private lateinit var jdbcTemplate: JdbcTemplate
@@ -29,6 +35,7 @@ class CooldownServiceImplTest {
 
     private fun cleanup() {
         jdbcTemplate.update("DELETE FROM cooldowns")
+        jdbcTemplate.update("DELETE FROM active_status_effects")
     }
 
     @Test
@@ -143,5 +150,46 @@ class CooldownServiceImplTest {
 
         assertIs<CooldownResult.Ready>(result)
         assertIs<CooldownResult.OnCooldown>(cooldownService.checkCooldown(userId, type))
+    }
+
+    @Test
+    fun `durationFor with userId returns halved duration when DROP_COOLDOWN_REDUCTION is active`() {
+        cleanup()
+
+        statusEffectService.applyEffect(userId, StatusEffect.DropCooldownReduction, 6.hours)
+        val boostedDuration = cooldownService.durationFor(CooldownType.DROP, userId)
+        val baseDuration = cooldownService.durationFor(CooldownType.DROP)
+
+        assertTrue(boostedDuration < baseDuration)
+        assertTrue(boostedDuration == baseDuration * 0.5)
+    }
+
+    @Test
+    fun `durationFor with userId returns base duration when no effect active`() {
+        cleanup()
+
+        val duration = cooldownService.durationFor(CooldownType.DROP, userId)
+
+        assertTrue(duration == cooldownService.durationFor(CooldownType.DROP))
+    }
+
+    @Test
+    fun `tryConsume respects active status effect when checking cooldown`() {
+        cleanup()
+
+        statusEffectService.applyEffect(userId, StatusEffect.DropCooldownReduction, 6.hours)
+        cooldownService.tryConsume(userId, type)
+
+        val baseDuration = cooldownService.durationFor(type)
+        jdbcTemplate.update(
+            "UPDATE cooldowns SET last_used_at = ? WHERE user_id = ? AND type = ?",
+            Timestamp.from(Instant.now().minusSeconds(baseDuration.inWholeSeconds / 2 + 1)),
+            userId.value,
+            type.value,
+        )
+
+        val result = cooldownService.tryConsume(userId, type)
+
+        assertIs<CooldownResult.Ready>(result)
     }
 }
