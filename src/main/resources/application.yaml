@@ -17,6 +17,10 @@ management:
   tracing:
     export:
       enabled: false
+  otlp:
+    metrics:
+      export:
+        enabled: false
 
 discord:
   token: ${DISCORD_BOT_TOKEN}
