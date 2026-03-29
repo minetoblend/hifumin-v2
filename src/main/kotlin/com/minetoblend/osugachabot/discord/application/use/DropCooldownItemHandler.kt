@@ -9,7 +9,9 @@ import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.behavior.interaction.respondPublic
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import org.springframework.stereotype.Component
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.toJavaDuration
 
 @Component
 class DropCooldownItemHandler(
@@ -19,9 +21,12 @@ class DropCooldownItemHandler(
     override val itemType = ItemType.DropSpeedup
 
     override suspend fun ChatInputCommandInteractionCreateEvent.handle(userId: UserId) {
-        statusEffectService.applyEffect(userId, DropCooldownReduction, 6.hours)
+        val result = statusEffectService.applyEffect(userId, DropCooldownReduction, 6.hours)
+
+        val duration = (result.expiresAt - Clock.System.now())
+
         interaction.respondPublic {
-            content = "${interaction.user.mention} Your drop cooldown is reduced by **50%** for the next **6 hours**!"
+            content = "${interaction.user.mention} Your drop cooldown is reduced by **50%** for the next **${duration.inWholeHours} hours**!"
         }
     }
 }
