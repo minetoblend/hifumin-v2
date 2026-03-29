@@ -1,0 +1,49 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0011-create-wishlisted-cards
+      author: liquibase
+      changes:
+        - createTable:
+            tableName: wishlisted_cards
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: card_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_wishlist_card
+                    references: cards(id)
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+        - createIndex:
+            tableName: wishlisted_cards
+            indexName: idx_wishlist_user_id
+            columns:
+              - column:
+                  name: user_id
+        - createIndex:
+            tableName: wishlisted_cards
+            indexName: idx_wishlist_card_id
+            columns:
+              - column:
+                  name: card_id
+        - addUniqueConstraint:
+            tableName: wishlisted_cards
+            constraintName: uq_wishlist_user_card
+            columnNames: user_id, card_id
