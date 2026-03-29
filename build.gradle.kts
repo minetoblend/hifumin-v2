@@ -90,13 +90,13 @@ tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
     // each filename.
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     doFirst {
-        val jarsByName = mutableMapOf<String, File>()
+        val bestByName = mutableMapOf<String, File>()
         for (file in classpath!!.files) {
-            val existing = jarsByName[file.name]
+            val existing = bestByName[file.name]
             if (existing == null || file.length() > existing.length()) {
-                jarsByName[file.name] = file
+                bestByName[file.name] = file
             }
         }
-        setClasspath(files(jarsByName.values))
+        setClasspath(classpath!!.filter { file -> bestByName[file.name] == file })
     }
 }
