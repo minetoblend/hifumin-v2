@@ -13,3 +13,10 @@ fun CardCondition.multiplier(): Float = when (this) {
     Poor -> 0.2f
     Damaged -> 0.1f
 }
+
+fun CardCondition.prettyName(): String = when (this) {
+    Mint -> "mint"
+    Good -> "good"
+    Poor -> "poor"
+    Damaged -> "badly damaged"
+}

@@ -84,4 +84,5 @@ class CardServiceImplTest {
         assertTrue(cards.all { it.id.value > 0 })
         assertTrue(cards.all { it.username.isNotBlank() })
     }
+
 }
