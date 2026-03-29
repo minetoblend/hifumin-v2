@@ -57,7 +57,7 @@ class CollectionCommand(
                 description = when (pageCount) {
                     0 -> "${user.effectiveName} has no cards"
                     else -> replicas.joinToString("\n") { replica ->
-                        "`${replica.id.toDisplayId()}` · ${replica.condition.icon} · ${replica.card.username} (${replica.burnValue} gold)"
+                        "`${replica.id.toDisplayId()}` · ${replica.condition.icon} · ${replica.card.username} (${replica.card.rarity}, ${replica.burnValue} gold)"
                     }
                 }
 
