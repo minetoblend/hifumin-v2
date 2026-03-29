@@ -54,6 +54,11 @@ class CollectionCommand(
             embed {
                 title = "Card collection for ${user.effectiveName}"
 
+                if (pageCount == 0) {
+                    description = "No cards found in collection"
+                    return
+                }
+
                 description = replicas.joinToString("\n") { replica ->
                     "`${replica.id.toDisplayId()}` · ${replica.condition.icon} · ${replica.card.username} (${replica.burnValue} gold)"
                 }
