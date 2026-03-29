@@ -6,10 +6,12 @@ import com.minetoblend.osugachabot.cooldown.CooldownType
 import com.minetoblend.osugachabot.discord.SlashCommand
 import com.minetoblend.osugachabot.inventory.InventoryService
 import com.minetoblend.osugachabot.inventory.ItemType
+import com.minetoblend.osugachabot.daily.DailyClaimedEvent
 import com.minetoblend.osugachabot.users.toUserId
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.behavior.interaction.respondPublic
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Component
 import kotlin.time.Clock
 import kotlin.time.Duration
@@ -25,6 +27,7 @@ private fun Duration.toDiscordRelativeTimestamp(): String {
 class DailyCommand(
     private val cooldownService: CooldownService,
     private val inventoryService: InventoryService,
+    private val eventPublisher: ApplicationEventPublisher,
 ) : SlashCommand {
     override val name = "daily"
     override val description = "Claim your daily gold reward"
@@ -35,6 +38,7 @@ class DailyCommand(
         when (val result = cooldownService.tryConsume(userId, CooldownType.DAILY)) {
             is CooldownResult.Ready -> {
                 inventoryService.addItems(userId, ItemType.Gold, DAILY_GOLD_REWARD)
+                eventPublisher.publishEvent(DailyClaimedEvent(userId))
                 interaction.respondPublic {
                     content = "${interaction.user.mention} you claimed your daily reward: :money_bag: **$DAILY_GOLD_REWARD gold**!"
                 }

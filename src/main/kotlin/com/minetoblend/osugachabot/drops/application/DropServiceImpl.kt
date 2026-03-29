@@ -124,6 +124,7 @@ class DropServiceImpl(
         )
 
         val replica = cardReplicaRepository.save(replicaEntity)
+        eventPublisher.publishEvent(CardClaimedEvent(userId))
 
         return ClaimResult.Claimed(drop.toDomain(), replica.toDomain())
     }

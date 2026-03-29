@@ -12,6 +12,9 @@ import com.minetoblend.osugachabot.users.toUserId
 import com.minetoblend.osugachabot.cards.Card
 import com.minetoblend.osugachabot.cards.CardId
 import com.minetoblend.osugachabot.cards.persistence.CardEntity
+import com.minetoblend.osugachabot.trading.TradeAcceptedEvent
+import com.minetoblend.osugachabot.trading.TradeInitiatedEvent
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -20,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional
 class TradeServiceImpl(
     private val tradeRepository: TradeRepository,
     private val cardReplicaRepository: CardReplicaRepository,
+    private val eventPublisher: ApplicationEventPublisher,
 ) : TradeService {
 
     @Transactional
@@ -51,6 +55,8 @@ class TradeServiceImpl(
                 requestedCardId = requestedCardId.value,
             )
         )
+
+        eventPublisher.publishEvent(TradeInitiatedEvent(initiatorUserId))
 
         return CreateTradeResult.Created(
             trade = entity.toDomain(),
@@ -87,6 +93,8 @@ class TradeServiceImpl(
 
         trade.status = Accepted
         tradeRepository.save(trade)
+
+        eventPublisher.publishEvent(TradeAcceptedEvent(userId))
 
         return AcceptTradeResult.Accepted(
             trade = trade.toDomain(),
