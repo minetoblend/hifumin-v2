@@ -2,6 +2,7 @@ package com.minetoblend.osugachabot.discord.application.collection
 
 import com.minetoblend.osugachabot.cards.CardReplicaService
 import com.minetoblend.osugachabot.cards.burnValue
+import com.minetoblend.osugachabot.cards.icon
 import com.minetoblend.osugachabot.discord.PaginatedMessage
 import com.minetoblend.osugachabot.discord.SlashCommand
 import com.minetoblend.osugachabot.users.UserId
@@ -54,7 +55,7 @@ class CollectionCommand(
                 title = "Card collection for ${user.effectiveName}"
 
                 description = replicas.joinToString("\n") { replica ->
-                    "`${replica.id.toDisplayId()}` · ${replica.condition} · ${replica.card.username} (${replica.burnValue} gold)"
+                    "`${replica.id.toDisplayId()}` · ${replica.condition.icon} · ${replica.card.username} (${replica.burnValue} gold)"
                 }
 
                 pageFooter()
