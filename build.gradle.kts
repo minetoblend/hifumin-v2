@@ -84,19 +84,5 @@ tasks.withType<Test> {
 }
 
 tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
-    // JetBrains Compose produces wrapper JARs (org.jetbrains.compose.*) that delegate to real
-    // androidx.compose JARs with the same filename. With DuplicatesStrategy.EXCLUDE, the empty
-    // wrapper can win, causing NoClassDefFoundError. Deduplicate by keeping the largest JAR for
-    // each filename.
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    doFirst {
-        val bestByName = mutableMapOf<String, File>()
-        for (file in classpath!!.files) {
-            val existing = bestByName[file.name]
-            if (existing == null || file.length() > existing.length()) {
-                bestByName[file.name] = file
-            }
-        }
-        setClasspath(classpath!!.filter { file -> bestByName[file.name] == file })
-    }
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
