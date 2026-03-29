@@ -38,8 +38,6 @@ class ViewCommand(
             return
         }
 
-        println(replicaId)
-
         val replica = cardReplicaService.findById(replicaId)
         if (replica == null) {
             interaction.respondEphemeral { content = "Card `$rawId` not found." }

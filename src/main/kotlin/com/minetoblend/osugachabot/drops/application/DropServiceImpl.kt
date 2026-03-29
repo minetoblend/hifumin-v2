@@ -23,6 +23,7 @@ import com.minetoblend.osugachabot.drops.persistence.DroppedCardEntity
 import com.minetoblend.osugachabot.drops.persistence.DropEntity
 import com.minetoblend.osugachabot.drops.persistence.DropRepository
 import com.minetoblend.osugachabot.users.UserId
+import com.minetoblend.osugachabot.users.toUserId
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -137,7 +138,7 @@ class DropServiceImpl(
     private fun CardReplicaEntity.toDomain() = CardReplica(
         id = CardReplicaId(id),
         card = card.toDomain(),
-        userId = userId,
+        userId = userId.toUserId(),
         condition = condition,
     )
 

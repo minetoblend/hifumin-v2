@@ -6,3 +6,5 @@ import dev.kord.common.entity.Snowflake
 value class UserId(val value: Long)
 
 fun Snowflake.toUserId() = UserId(value.toLong())
+
+fun Long.toUserId() = UserId(this)
