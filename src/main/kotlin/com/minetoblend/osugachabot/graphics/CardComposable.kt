@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.minetoblend.osugachabot.cards.Card
 import com.minetoblend.osugachabot.cards.CardId
+import com.minetoblend.osugachabot.cards.CardRarity
 import com.minetoblend.osugachabot.graphics.CardRenderer.Companion.CARD_HEIGHT
 import com.minetoblend.osugachabot.graphics.CardRenderer.Companion.CARD_WIDTH
 
@@ -48,10 +50,10 @@ fun CardComposablePreview() {
         followerCount = 1000,
         globalRank = 1000,
         userId = 3,
-        rarity = SR,
+        rarity = SSR,
     )
 
-    CardComposable(card)
+    CardComposable(card, modifier = Modifier.padding(16.dp))
 }
 
 @Composable
@@ -62,25 +64,30 @@ fun CardComposable(
 ) {
     val shape = RoundedCornerShape(12.dp)
     val colors = CardColors.forRarity(card.rarity)
+    val isEpic = card.rarity == CardRarity.SSR || card.rarity == CardRarity.EX
+
+    val elevation = if (isEpic) 24.dp else 12.dp
+    val borderWidth = if (isEpic) 3.dp else 2.dp
+    val borderAlphas = if (isEpic) Triple(0.9f, 0.6f, 0.3f) else Triple(0.6f, 0.3f, 0.1f)
 
     Box(
         modifier = modifier
             .size(CARD_WIDTH.dp, CARD_HEIGHT.dp)
             .shadow(
-                elevation = 12.dp,
+                elevation = elevation,
                 shape = shape,
-                ambientColor = colors.glow,
+                ambientColor = colors.glow.copy(alpha = if (isEpic) 0.8f else 0.5f),
                 spotColor = colors.primary
             )
             .clip(shape)
             .background(Color(0xFF1A1A2E))
             .border(
-                width = 2.dp,
+                width = borderWidth,
                 brush = Brush.linearGradient(
                     colors = listOf(
-                        colors.primary.copy(alpha = 0.6f),
-                        colors.secondary.copy(alpha = 0.3f),
-                        colors.primary.copy(alpha = 0.1f),
+                        colors.primary.copy(alpha = borderAlphas.first),
+                        colors.secondary.copy(alpha = borderAlphas.second),
+                        colors.primary.copy(alpha = borderAlphas.third),
                     ),
                     start = Offset.Zero,
                     end = Offset.Infinite
@@ -88,7 +95,7 @@ fun CardComposable(
                 shape = shape,
             )
     ) {
-        CardBackground(colors)
+        CardBackground(colors, isEpic)
 
         Column(
             modifier = Modifier.fillMaxSize()
@@ -106,7 +113,8 @@ private fun CardHeader(card: Card, colors: CardColors) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .height(48.dp)
+            .padding(horizontal = 16.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -126,20 +134,23 @@ private fun CardHeader(card: Card, colors: CardColors) {
             }
         }
 
+        val isEpicRarity = card.rarity == CardRarity.SSR || card.rarity == CardRarity.EX
+
         Surface(
-            color = Color.Transparent,
+            color = if (isEpicRarity) colors.primary.copy(alpha = 0.12f) else Color.Transparent,
             shape = RoundedCornerShape(6.dp),
         ) {
             Text(
                 text = card.rarity.name.uppercase(),
+                modifier = if (isEpicRarity) Modifier.padding(horizontal = 6.dp, vertical = 2.dp) else Modifier,
                 style = TextStyle(
                     brush = Brush.horizontalGradient(
                         listOf(colors.primary, colors.secondary)
                     ),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
+                    fontSize = if (isEpicRarity) 18.sp else 16.sp,
+                    fontWeight = FontWeight.ExtraBold,
                     fontFamily = FontFamily.Monospace,
-                    letterSpacing = 0.8.sp
+                    letterSpacing = if (isEpicRarity) 1.2.sp else 0.8.sp
                 )
             )
         }
@@ -256,30 +267,66 @@ private fun CardFooter(card: Card, colors: CardColors) {
 }
 
 @Composable
-private fun CardBackground(colors: CardColors) {
+private fun CardBackground(colors: CardColors, isEpic: Boolean = false) {
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(
                 Brush.radialGradient(
                     colors = listOf(
-                        colors.primary.copy(alpha = 0.15f),
-                        colors.secondary.copy(alpha = 0.05f),
+                        colors.primary.copy(alpha = if (isEpic) 0.3f else 0.15f),
+                        colors.secondary.copy(alpha = if (isEpic) 0.15f else 0.05f),
                         Color.Transparent
                     ),
                     center = Offset.Zero,
-                    radius = 500f
+                    radius = if (isEpic) 700f else 500f
                 )
             )
             .background(
                 Brush.linearGradient(
                     colors = listOf(
-                        colors.secondary.copy(alpha = 0.05f),
-                        colors.primary.copy(alpha = 0.05f),
+                        colors.secondary.copy(alpha = if (isEpic) 0.12f else 0.05f),
+                        colors.primary.copy(alpha = if (isEpic) 0.12f else 0.05f),
                     ),
                     start = Offset.Infinite,
                     end = Offset.Zero
                 )
             )
     )
+
+    if (isEpic) {
+        // Additional radial glow from the bottom-right corner
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            colors.secondary.copy(alpha = 0.2f),
+                            colors.primary.copy(alpha = 0.08f),
+                            Color.Transparent
+                        ),
+                        center = Offset(Float.MAX_VALUE, Float.MAX_VALUE),
+                        radius = 600f
+                    )
+                )
+        )
+
+        // Vertical shimmer accent
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            colors.primary.copy(alpha = 0.08f),
+                            Color.Transparent,
+                            colors.secondary.copy(alpha = 0.06f),
+                            Color.Transparent,
+                            colors.primary.copy(alpha = 0.08f),
+                        )
+                    )
+                )
+        )
+    }
 }
