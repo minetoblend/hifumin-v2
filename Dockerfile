@@ -9,6 +9,7 @@ COPY build.gradle.kts settings.gradle.kts .
 RUN ./gradlew dependencies --no-daemon -q || true
 
 COPY src src
+ENV DOCKER_BUILD=1
 RUN ./gradlew bootJar --no-daemon -x test
 
 RUN java -Djarmode=layertools -jar build/libs/*.jar extract --destination extracted
