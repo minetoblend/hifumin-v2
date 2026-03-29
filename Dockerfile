@@ -5,7 +5,6 @@ COPY gradlew .
 COPY gradle gradle
 RUN ./gradlew --version
 
-ENV DOCKER_BUILD=1
 COPY build.gradle.kts settings.gradle.kts .
 RUN ./gradlew dependencies --no-daemon -q || true
 
@@ -17,6 +16,10 @@ RUN java -Djarmode=layertools -jar build/libs/*.jar extract --destination extrac
 
 FROM eclipse-temurin:21-jre
 WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libfreetype6 libfontconfig1 libgl1 libx11-6 libxext6 libxrender1 \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN addgroup --system spring && adduser --system --ingroup spring spring
 USER spring

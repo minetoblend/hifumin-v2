@@ -58,11 +58,7 @@ dependencies {
     implementation("io.opentelemetry.instrumentation:opentelemetry-jdbc:2.16.0-alpha")
     implementation("io.opentelemetry:opentelemetry-extension-kotlin")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
-    if (System.getenv("DOCKER_BUILD") != null) {
-        implementation(compose.desktop.linux_x64)
-    } else {
-        implementation(compose.desktop.currentOs)
-    }
+    implementation(compose.desktop.currentOs)
     implementation(compose.material3)
 }
 
