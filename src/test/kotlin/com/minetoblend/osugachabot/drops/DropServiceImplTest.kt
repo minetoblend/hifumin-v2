@@ -32,6 +32,9 @@ class DropServiceImplTest {
     private lateinit var dropRepository: DropRepository
 
     @Autowired
+    private lateinit var inventoryService: com.minetoblend.osugachabot.inventory.InventoryService
+
+    @Autowired
     private lateinit var jdbcTemplate: JdbcTemplate
 
     private fun seedCards(count: Int = 5) {
@@ -43,6 +46,7 @@ class DropServiceImplTest {
         jdbcTemplate.update("DELETE FROM dropped_cards")
         jdbcTemplate.update("DELETE FROM drops")
         jdbcTemplate.update("DELETE FROM cooldowns")
+        jdbcTemplate.update("DELETE FROM inventory_items")
         return (dropService.createDrop(userId) as CreateDropResult.Created).drop
     }
 
@@ -326,5 +330,51 @@ class DropServiceImplTest {
         val result = dropService.claimCard(drop.id, 1, userId)
 
         assertIs<ClaimResult.Claimed>(result)
+    }
+
+    @Test
+    fun `claimCard bypasses claim cooldown when user has a FreeClaim item`() {
+        val drop = createDrop()
+        val userId = UserId(42L)
+
+        dropService.claimCard(drop.id, 0, userId)
+        inventoryService.addItems(userId, com.minetoblend.osugachabot.inventory.ItemType.FreeClaim, 1)
+        val result = dropService.claimCard(drop.id, 1, userId)
+
+        assertIs<ClaimResult.Claimed>(result)
+    }
+
+    @Test
+    fun `claimCard consumes the FreeClaim item when used to bypass cooldown`() {
+        val drop = createDrop()
+        val userId = UserId(42L)
+
+        dropService.claimCard(drop.id, 0, userId)
+        inventoryService.addItems(userId, com.minetoblend.osugachabot.inventory.ItemType.FreeClaim, 1)
+        dropService.claimCard(drop.id, 1, userId)
+
+        assertEquals(0, inventoryService.getItem(userId, com.minetoblend.osugachabot.inventory.ItemType.FreeClaim).amount)
+    }
+
+    @Test
+    fun `claimCard returns OnCooldown when user is on cooldown and has no FreeClaim item`() {
+        val drop = createDrop()
+        val userId = UserId(42L)
+
+        dropService.claimCard(drop.id, 0, userId)
+        val result = dropService.claimCard(drop.id, 1, userId)
+
+        assertIs<ClaimResult.OnCooldown>(result)
+    }
+
+    @Test
+    fun `claimCard does not consume FreeClaim item when not on cooldown`() {
+        val drop = createDrop()
+        val userId = UserId(42L)
+
+        inventoryService.addItems(userId, com.minetoblend.osugachabot.inventory.ItemType.FreeClaim, 1)
+        dropService.claimCard(drop.id, 0, userId)
+
+        assertEquals(1, inventoryService.getItem(userId, com.minetoblend.osugachabot.inventory.ItemType.FreeClaim).amount)
     }
 }

@@ -1,36 +1,26 @@
 package com.minetoblend.osugachabot.drops.application
 
-import com.minetoblend.osugachabot.cards.Card
-import com.minetoblend.osugachabot.cards.CardCondition
-import com.minetoblend.osugachabot.cards.CardId
-import com.minetoblend.osugachabot.cards.CardReplica
-import com.minetoblend.osugachabot.cards.CardReplicaId
-import com.minetoblend.osugachabot.cards.CardService
+import com.minetoblend.osugachabot.cards.*
 import com.minetoblend.osugachabot.cards.persistence.CardEntity
-import com.minetoblend.osugachabot.cards.persistence.CardRepository
 import com.minetoblend.osugachabot.cards.persistence.CardReplicaEntity
 import com.minetoblend.osugachabot.cards.persistence.CardReplicaRepository
+import com.minetoblend.osugachabot.cards.persistence.CardRepository
 import com.minetoblend.osugachabot.cooldown.CooldownResult
 import com.minetoblend.osugachabot.cooldown.CooldownService
 import com.minetoblend.osugachabot.cooldown.CooldownType
-import com.minetoblend.osugachabot.drops.ClaimResult
-import com.minetoblend.osugachabot.drops.CreateDropResult
-import com.minetoblend.osugachabot.drops.Drop
-import com.minetoblend.osugachabot.drops.DropCreatedEvent
-import com.minetoblend.osugachabot.drops.DropId
-import com.minetoblend.osugachabot.drops.DropService
-import com.minetoblend.osugachabot.drops.DroppedCard
-import com.minetoblend.osugachabot.drops.persistence.DroppedCardEntity
+import com.minetoblend.osugachabot.drops.*
 import com.minetoblend.osugachabot.drops.persistence.DropEntity
 import com.minetoblend.osugachabot.drops.persistence.DropRepository
+import com.minetoblend.osugachabot.drops.persistence.DroppedCardEntity
+import com.minetoblend.osugachabot.inventory.InventoryService
+import com.minetoblend.osugachabot.inventory.ItemType
+import com.minetoblend.osugachabot.inventory.RemoveItemsResult
 import com.minetoblend.osugachabot.users.UserId
 import com.minetoblend.osugachabot.users.toUserId
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.security.SecureRandom
-import kotlin.random.asKotlinRandom
 import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -43,6 +33,7 @@ class DropServiceImpl(
     private val dropRepository: DropRepository,
     private val cardReplicaRepository: CardReplicaRepository,
     private val cooldownService: CooldownService,
+    private val inventoryService: InventoryService,
     private val eventPublisher: ApplicationEventPublisher,
 ) : DropService {
     override fun dropCooldownDuration(): Duration = cooldownService.durationFor(DROP)
@@ -115,7 +106,10 @@ class DropServiceImpl(
             return ClaimResult.AlreadyClaimed(drop.toDomain())
 
         when (val cooldown = cooldownService.tryConsume(userId, CooldownType.CLAIM)) {
-            is CooldownResult.OnCooldown -> return ClaimResult.OnCooldown(cooldown.remaining)
+            is CooldownResult.OnCooldown -> when (inventoryService.removeItems(userId, ItemType.FreeClaim, 1)) {
+                RemoveItemsResult.InsufficientItems -> return ClaimResult.OnCooldown(cooldown.remaining)
+                RemoveItemsResult.Success -> {}
+            }
             CooldownResult.Ready -> {}
         }
 

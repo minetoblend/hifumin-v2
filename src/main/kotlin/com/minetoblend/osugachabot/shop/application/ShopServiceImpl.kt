@@ -16,6 +16,11 @@ class ShopServiceImpl(
 ) : ShopService {
     override fun getShopItems(): List<ShopItem> = listOf(
         ShopItem(
+            id = ShopItemId("free claim"),
+            item = FreeClaim,
+            goldPrice = 100,
+        ),
+        ShopItem(
             id = ShopItemId("drop speedup"),
             item = DropSpeedup,
             goldPrice = 600
