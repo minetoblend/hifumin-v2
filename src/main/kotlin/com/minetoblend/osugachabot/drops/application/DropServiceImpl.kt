@@ -71,13 +71,7 @@ class DropServiceImpl(
 
     @Transactional
     override fun claimCard(dropId: DropId, cardIndex: Int, userId: UserId): ClaimResult {
-        when (val cooldown = cooldownService.tryConsume(userId, CooldownType.CLAIM)) {
-            is CooldownResult.OnCooldown -> return ClaimResult.OnCooldown(cooldown.remaining)
-            CooldownResult.Ready -> {}
-        }
-
         val drop = dropRepository.findByIdOrNull(dropId.value) ?: return ClaimResult.DropNotFound
-
 
         if (Clock.System.now() > drop.createdAt.toKotlinInstant() + dropExpiryDuration())
             return ClaimResult.Expired
@@ -86,6 +80,11 @@ class DropServiceImpl(
 
         if (droppedCard.claimedByUserId != null)
             return ClaimResult.AlreadyClaimed(drop.toDomain())
+
+        when (val cooldown = cooldownService.tryConsume(userId, CooldownType.CLAIM)) {
+            is CooldownResult.OnCooldown -> return ClaimResult.OnCooldown(cooldown.remaining)
+            CooldownResult.Ready -> {}
+        }
 
         droppedCard.claimedByUserId = userId.value
 

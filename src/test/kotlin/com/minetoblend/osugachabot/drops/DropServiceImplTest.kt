@@ -266,6 +266,52 @@ class DropServiceImplTest {
     }
 
     @Test
+    fun `claimCard does not consume cooldown when drop is not found`() {
+        val drop = createDrop()
+        val userId = UserId(42L)
+
+        dropService.claimCard(DropId(Long.MAX_VALUE), 0, userId)
+        val result = dropService.claimCard(drop.id, 0, userId)
+
+        assertIs<ClaimResult.Claimed>(result)
+    }
+
+    @Test
+    fun `claimCard does not consume cooldown when drop is expired`() {
+        val drop = createDrop()
+        val userId = UserId(42L)
+
+        jdbcTemplate.update(
+            "UPDATE drops SET created_at = ? WHERE id = ?",
+            Timestamp.from(Instant.now().minusSeconds(61)),
+            drop.id.value,
+        )
+        dropService.claimCard(drop.id, 0, userId)
+
+        jdbcTemplate.update(
+            "UPDATE drops SET created_at = ? WHERE id = ?",
+            Timestamp.from(Instant.now()),
+            drop.id.value,
+        )
+        val result = dropService.claimCard(drop.id, 0, userId)
+
+        assertIs<ClaimResult.Claimed>(result)
+    }
+
+    @Test
+    fun `claimCard does not consume cooldown when card is already claimed`() {
+        val drop = createDrop()
+        val user1 = UserId(1L)
+        val user2 = UserId(2L)
+
+        dropService.claimCard(drop.id, 0, user1)
+        dropService.claimCard(drop.id, 0, user2)
+        val result = dropService.claimCard(drop.id, 1, user2)
+
+        assertIs<ClaimResult.Claimed>(result)
+    }
+
+    @Test
     fun `claimCard returns Claimed after claim cooldown has elapsed`() {
         val drop = createDrop()
         val userId = UserId(42L)
