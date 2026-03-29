@@ -13,5 +13,10 @@ spring:
     jdbc:
       initialize-schema: always
 
+management:
+  tracing:
+    export:
+      enabled: false
+
 discord:
   token: ${DISCORD_BOT_TOKEN}
