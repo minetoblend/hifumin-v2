@@ -27,5 +27,5 @@ val ItemType.description: String?
     get() = when (this) {
         Gold -> "Gold"
         DropSpeedup -> "Drop Cooldown -50% (6h)"
-        SuperDrop -> "Superdrop"
+        SuperDrop -> null
     }
