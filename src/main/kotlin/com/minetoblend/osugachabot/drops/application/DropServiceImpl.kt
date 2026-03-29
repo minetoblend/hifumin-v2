@@ -120,7 +120,8 @@ class DropServiceImpl(
             card = droppedCard.card,
             userId = userId.value,
             condition = droppedCard.condition,
-        ).also { it.burnValue = computeBurnValue(droppedCard.card.followerCount, droppedCard.condition) }
+            burnValue = computeBurnValue(droppedCard.card.followerCount, droppedCard.condition),
+        )
 
         val replica = cardReplicaRepository.save(replicaEntity)
 

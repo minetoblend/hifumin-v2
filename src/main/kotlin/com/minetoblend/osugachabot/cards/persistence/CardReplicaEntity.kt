@@ -31,6 +31,8 @@ class CardReplicaEntity(
     @Column(name = "card_condition", nullable = false)
     @Enumerated(EnumType.ORDINAL)
     var condition: CardCondition,
+    @Column(name = "burn_value")
+    var burnValue: Int? = null
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,7 +41,4 @@ class CardReplicaEntity(
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     var createdAt: Instant = Instant.now()
-
-    @Column(name = "burn_value")
-    var burnValue: Int? = null
 }
