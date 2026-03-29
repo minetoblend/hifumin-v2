@@ -6,6 +6,7 @@ import kotlin.time.Duration
 enum class CooldownType(val value: String) {
     DROP("drop"),
     CLAIM("claim"),
+    DAILY("daily"),
 }
 
 interface CooldownService {

@@ -32,6 +32,7 @@ class CooldownServiceImplTest {
     private val otherUserId = UserId(2L)
     private val type = CooldownType.DROP
     private val otherType = CooldownType.CLAIM
+    private val dailyType = CooldownType.DAILY
 
     private fun cleanup() {
         jdbcTemplate.update("DELETE FROM cooldowns")
@@ -171,6 +172,25 @@ class CooldownServiceImplTest {
         val duration = cooldownService.durationFor(CooldownType.DROP, userId)
 
         assertTrue(duration == cooldownService.durationFor(CooldownType.DROP))
+    }
+
+    @Test
+    fun `DAILY cooldown duration is 24 hours`() {
+        val duration = cooldownService.durationFor(dailyType)
+
+        assertTrue(duration == 24.hours)
+    }
+
+    @Test
+    fun `DAILY tryConsume returns Ready on first use and OnCooldown immediately after`() {
+        cleanup()
+
+        val first = cooldownService.tryConsume(userId, dailyType)
+        val second = cooldownService.tryConsume(userId, dailyType)
+
+        assertIs<CooldownResult.Ready>(first)
+        assertIs<CooldownResult.OnCooldown>(second)
+        assertTrue((second as CooldownResult.OnCooldown).remaining.isPositive())
     }
 
     @Test

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import kotlin.time.Clock
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.toJavaInstant
 import kotlin.time.toKotlinInstant
@@ -25,6 +26,7 @@ class CooldownServiceImpl(
     override fun durationFor(type: CooldownType): Duration = when (type) {
         CooldownType.DROP -> 10.minutes
         CooldownType.CLAIM -> 1.minutes
+        CooldownType.DAILY -> 24.hours
     }
 
     override fun durationFor(type: CooldownType, userId: UserId): Duration {
