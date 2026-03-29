@@ -18,27 +18,27 @@ data class CardColors(
 ) {
     companion object {
         fun forRarity(rarity: CardRarity) = when (rarity) {
-            Common -> CardColors(
+            N -> CardColors(
                 primary = Color(0xFFBBBBBB),
                 secondary = Color(0xFF888888),
             )
 
-            Uncommon -> CardColors(
+            R -> CardColors(
                 primary = Color(0xFF3DF37A),
                 secondary = Color(0xFF3DCBF3),
             )
 
-            Rare -> CardColors(
+            SR -> CardColors(
                 primary = Color(0xFFF58E7B),
                 secondary = Color(0xFFF57BA2),
             )
 
-            Legendary -> CardColors(
+            SSR -> CardColors(
                 primary = Color(0xFFF3A93D),
                 secondary = Color(0xFFF33D3D),
             )
 
-            Mythic -> CardColors(
+            EX -> CardColors(
                 primary = Color(0xFFF33DA9),
                 secondary = Color(0xFF8A3DF3),
             )

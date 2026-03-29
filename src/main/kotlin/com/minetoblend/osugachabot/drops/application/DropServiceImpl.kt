@@ -72,8 +72,8 @@ class DropServiceImpl(
     override fun createSuperDrop(userId: UserId): Drop {
         val cards = cardService.getRandomCards(SUPER_DROP_SIZE).toMutableList()
 
-        if (cards.none { it.rarity >= Rare }) {
-            val (rareCard) = cardService.getRandomCardsWithMinimumRarity(1, Rare)
+        if (cards.none { it.rarity >= SR }) {
+            val (rareCard) = cardService.getRandomCardsWithMinimumRarity(1, SR)
 
             cards[cards.indices.random()] = rareCard
         }

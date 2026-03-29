@@ -27,7 +27,7 @@ class CardEntity(
     var followerCount: Int,
     var globalRank: Int?,
     @Enumerated(EnumType.STRING)
-    var rarity: CardRarity = CardRarity.Common,
+    var rarity: CardRarity = CardRarity.N,
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

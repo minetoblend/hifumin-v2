@@ -34,7 +34,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.minetoblend.osugachabot.cards.Card
 import com.minetoblend.osugachabot.cards.CardId
-import com.minetoblend.osugachabot.cards.CardRarity
 import com.minetoblend.osugachabot.graphics.CardRenderer.Companion.CARD_HEIGHT
 import com.minetoblend.osugachabot.graphics.CardRenderer.Companion.CARD_WIDTH
 
@@ -49,7 +48,7 @@ fun CardComposablePreview() {
         followerCount = 1000,
         globalRank = 1000,
         userId = 3,
-        rarity = Common,
+        rarity = N,
     )
 
     CardComposable(card)

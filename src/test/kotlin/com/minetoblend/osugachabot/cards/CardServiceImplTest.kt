@@ -35,17 +35,17 @@ class CardServiceImplTest {
         assertEquals("Rhythm Incarnate", card.title)
         assertEquals(100, card.followerCount)
         assertEquals(42, card.globalRank)
-        assertEquals(CardRarity.Common, card.rarity)
+        assertEquals(CardRarity.N, card.rarity)
     }
 
     @Test
     fun `findById maps rarity from entity`() {
-        val entity = cardRepository.save(CardEntity(789L, "FamousPlayer", "JP", null, 200_000, null, CardRarity.Legendary))
+        val entity = cardRepository.save(CardEntity(789L, "FamousPlayer", "JP", null, 200_000, null, CardRarity.SSR))
 
         val card = cardService.findById(CardId(entity.id))
 
         assertNotNull(card)
-        assertEquals(CardRarity.Legendary, card.rarity)
+        assertEquals(CardRarity.SSR, card.rarity)
     }
 
     @Test
