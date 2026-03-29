@@ -9,11 +9,11 @@ enum class CardRarity {
 
     companion object {
         fun fromFollowerCount(followerCount: Int): CardRarity = when {
-            followerCount >= 50_000 -> Mythic
-            followerCount >= 10_000 -> Legendary
-            followerCount >= 2_000  -> Rare
-            followerCount >= 600    -> Uncommon
-            else                    -> Common
+            followerCount >= 8000  -> Mythic
+            followerCount >= 850   -> Legendary
+            followerCount >= 280   -> Rare
+            followerCount >= 100   -> Uncommon
+            else                   -> Common
         }
     }
 }
