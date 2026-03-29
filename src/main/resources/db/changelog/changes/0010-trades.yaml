@@ -1,0 +1,58 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0010-create-trades
+      author: liquibase
+      changes:
+        - createTable:
+            tableName: trades
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: initiator_user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: target_user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: offered_card_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: requested_card_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+        - createIndex:
+            tableName: trades
+            indexName: idx_trade_initiator
+            columns:
+              - column:
+                  name: initiator_user_id
+        - createIndex:
+            tableName: trades
+            indexName: idx_trade_target
+            columns:
+              - column:
+                  name: target_user_id

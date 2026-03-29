@@ -17,3 +17,5 @@ databaseChangeLog:
       file: db/changelog/changes/0008-inventory.yaml
   - include:
       file: db/changelog/changes/0009-status-effects.yaml
+  - include:
+      file: db/changelog/changes/0010-trades.yaml

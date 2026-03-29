@@ -8,7 +8,7 @@ import com.minetoblend.osugachabot.users.UserId
 import dev.kord.core.behavior.interaction.response.edit
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
-import dev.kord.rest.builder.message.actionRow
+import dev.kord.rest.builder.component.actionRow
 import io.ktor.client.request.forms.ChannelProvider
 import io.ktor.utils.io.ByteReadChannel
 import io.opentelemetry.context.Context

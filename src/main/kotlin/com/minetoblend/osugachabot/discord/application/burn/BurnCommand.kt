@@ -25,7 +25,7 @@ import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.core.on
 import dev.kord.rest.builder.interaction.ChatInputCreateBuilder
 import dev.kord.rest.builder.message.MessageBuilder
-import dev.kord.rest.builder.message.actionRow
+import dev.kord.rest.builder.component.actionRow
 import dev.kord.rest.builder.message.embed
 import io.ktor.client.request.forms.*
 import io.ktor.utils.io.*

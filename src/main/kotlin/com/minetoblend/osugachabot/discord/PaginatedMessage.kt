@@ -10,7 +10,7 @@ import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.core.on
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.MessageBuilder
-import dev.kord.rest.builder.message.actionRow
+import dev.kord.rest.builder.component.actionRow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
