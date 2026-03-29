@@ -11,18 +11,18 @@ databaseChangeLog:
                   type: BIGINT
                   constraints:
                     nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_user_action_stats
               - column:
                   name: action
                   type: VARCHAR(30)
                   constraints:
                     nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_user_action_stats
               - column:
                   name: count
                   type: BIGINT
                   defaultValueNumeric: 0
                   constraints:
                     nullable: false
-        - addPrimaryKey:
-            tableName: user_action_stats
-            columnNames: user_id, action
-            constraintName: pk_user_action_stats
