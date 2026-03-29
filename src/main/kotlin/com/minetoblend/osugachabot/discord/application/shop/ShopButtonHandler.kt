@@ -1,6 +1,7 @@
 package com.minetoblend.osugachabot.discord.application.shop
 
 import com.minetoblend.osugachabot.discord.ButtonInteractionHandler
+import com.minetoblend.osugachabot.inventory.prettyName
 import com.minetoblend.osugachabot.shop.BuyShopItemResult
 import com.minetoblend.osugachabot.shop.ShopItemId
 import com.minetoblend.osugachabot.shop.ShopService
@@ -27,7 +28,7 @@ class ShopButtonHandler(private val shopService: ShopService) : ButtonInteractio
             }
 
             is Success -> interaction.respondPublic {
-                content = "${interaction.user.mention} Successfully purchased ${result.item.name} for ${result.item.goldPrice} gold"
+                content = "${interaction.user.mention} Successfully purchased ${result.item.item.prettyName} for ${result.item.goldPrice} gold"
             }
         }
     }
