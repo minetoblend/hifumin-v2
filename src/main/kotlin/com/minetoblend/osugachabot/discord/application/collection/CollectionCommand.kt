@@ -4,10 +4,14 @@ import com.minetoblend.osugachabot.cards.CardReplicaService
 import com.minetoblend.osugachabot.cards.burnValue
 import com.minetoblend.osugachabot.discord.PaginatedMessage
 import com.minetoblend.osugachabot.discord.SlashCommand
+import com.minetoblend.osugachabot.users.UserId
 import com.minetoblend.osugachabot.users.toUserId
+import dev.kord.core.entity.User
 import dev.kord.core.entity.effectiveName
 import dev.kord.core.entity.interaction.ChatInputCommandInteraction
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
+import dev.kord.rest.builder.interaction.ChatInputCreateBuilder
+import dev.kord.rest.builder.interaction.user
 import dev.kord.rest.builder.message.MessageBuilder
 import dev.kord.rest.builder.message.embed
 import kotlinx.coroutines.CoroutineScope
@@ -25,21 +29,29 @@ class CollectionCommand(
     override val name = "collection"
     override val description = "Shows your collection"
 
-    override suspend fun ChatInputCommandInteractionCreateEvent.handle() {
-        scope.launch {
-            CollectionMessage(interaction).run(1.minutes)
+    override fun ChatInputCreateBuilder.declare() {
+        user("user", "User to view the inventory of") {
+            required = false
         }
     }
 
-    private inner class CollectionMessage(interaction: ChatInputCommandInteraction) :
+    override suspend fun ChatInputCommandInteractionCreateEvent.handle() {
+        val user = interaction.command.users["user"] ?: interaction.user
+
+        scope.launch {
+            CollectionMessage(user, interaction).run(1.minutes)
+        }
+    }
+
+    private inner class CollectionMessage(val user: User, interaction: ChatInputCommandInteraction) :
         PaginatedMessage(scope, interaction) {
-        override suspend fun getItemCount(): Int = replicaService.getCardCount(interaction.user.id.toUserId())
+        override suspend fun getItemCount(): Int = replicaService.getCardCount(user.id.toUserId())
 
         override suspend fun MessageBuilder.renderPage(page: PageRequest) {
-            val replicas = replicaService.findByUserId(interaction.user.id.toUserId(), page)
+            val replicas = replicaService.findByUserId(user.id.toUserId(), page)
 
             embed {
-                title = "Card collection for ${interaction.user.effectiveName}"
+                title = "Card collection for ${user.effectiveName}"
 
                 description = replicas.joinToString("\n") { replica ->
                     "`${replica.id.toDisplayId()}` · ${replica.condition} · ${replica.card.username} (${replica.burnValue} gold)"
