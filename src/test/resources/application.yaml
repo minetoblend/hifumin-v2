@@ -8,7 +8,7 @@ spring:
           time_zone: UTC
   quartz:
     jdbc:
-      initialize-schema: always
+      initialize-schema: never
 
 discord:
   enabled: false

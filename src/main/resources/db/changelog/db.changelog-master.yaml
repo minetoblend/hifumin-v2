@@ -31,3 +31,15 @@ databaseChangeLog:
       file: db/changelog/changes/0015-deduplicate-cards.yaml
   - include:
       file: db/changelog/changes/0016-collection-value.yaml
+  - changeSet:
+      id: 0017-quartz-schema
+      author: liquibase
+      preConditions:
+        - onFail: MARK_RAN
+          not:
+            tableExists:
+              tableName: QRTZ_JOB_DETAILS
+      changes:
+        - sqlFile:
+            path: db/changelog/changes/0017-quartz-schema.sql
+            relativeToChangelogFile: false
