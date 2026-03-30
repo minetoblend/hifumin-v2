@@ -14,7 +14,6 @@ import com.minetoblend.osugachabot.users.toUserId
 import dev.kord.common.Color
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.core.behavior.interaction.respondEphemeral
-import dev.kord.core.behavior.interaction.respondPublic
 import dev.kord.core.behavior.interaction.response.edit
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.behavior.interaction.updatePublicMessage
@@ -23,9 +22,9 @@ import dev.kord.core.entity.interaction.response.PublicMessageInteractionRespons
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.core.on
+import dev.kord.rest.builder.component.actionRow
 import dev.kord.rest.builder.interaction.ChatInputCreateBuilder
 import dev.kord.rest.builder.message.MessageBuilder
-import dev.kord.rest.builder.component.actionRow
 import dev.kord.rest.builder.message.embed
 import io.ktor.client.request.forms.*
 import io.ktor.utils.io.*

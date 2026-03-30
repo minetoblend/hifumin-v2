@@ -3,13 +3,12 @@ package com.minetoblend.osugachabot.discord.application.drop
 import com.minetoblend.osugachabot.discord.ButtonInteractionHandler
 import com.minetoblend.osugachabot.drops.ClaimResult
 import com.minetoblend.osugachabot.drops.DropService
-import com.minetoblend.osugachabot.users.UserId
 import com.minetoblend.osugachabot.users.toUserId
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.behavior.interaction.respondPublic
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
-import kotlin.time.Clock
 import org.springframework.stereotype.Component
+import kotlin.time.Clock
 
 @Component
 class ClaimButtonHandler(private val dropService: DropService) : ButtonInteractionHandler {
