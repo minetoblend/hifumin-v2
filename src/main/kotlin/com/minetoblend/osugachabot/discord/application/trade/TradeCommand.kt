@@ -5,6 +5,7 @@ import com.minetoblend.osugachabot.discord.SlashCommand
 import com.minetoblend.osugachabot.discord.interactionButton
 import com.minetoblend.osugachabot.discord.utils.cardId
 import com.minetoblend.osugachabot.graphics.CardRenderer
+import com.minetoblend.osugachabot.graphics.toRenderableCard
 import com.minetoblend.osugachabot.trading.*
 import com.minetoblend.osugachabot.users.toUserId
 import dev.kord.common.entity.ButtonStyle
@@ -55,7 +56,10 @@ class TradeCommand(
 
                 coroutineScope {
                     val cardImage = async {
-                        cardRenderer.renderCards(listOf(result.offeredCard.card, result.requestedCard.card))
+                        cardRenderer.renderCards(listOf(
+                            result.offeredCard.toRenderableCard(),
+                            result.requestedCard.toRenderableCard(),
+                        ))
                     }
 
                     val ack = interaction.deferPublicResponse()

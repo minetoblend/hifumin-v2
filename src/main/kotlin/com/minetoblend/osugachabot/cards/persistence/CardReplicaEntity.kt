@@ -32,7 +32,9 @@ class CardReplicaEntity(
     @Enumerated(EnumType.ORDINAL)
     var condition: CardCondition,
     @Column(name = "burn_value")
-    var burnValue: Int? = null
+    var burnValue: Int? = null,
+    @Column(nullable = false)
+    var foil: Boolean = false,
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

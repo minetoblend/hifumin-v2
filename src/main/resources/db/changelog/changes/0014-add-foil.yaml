@@ -1,0 +1,23 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0014-add-foil
+      author: liquibase
+      changes:
+        - addColumn:
+            tableName: dropped_cards
+            columns:
+              - column:
+                  name: foil
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+        - addColumn:
+            tableName: card_replicas
+            columns:
+              - column:
+                  name: foil
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false

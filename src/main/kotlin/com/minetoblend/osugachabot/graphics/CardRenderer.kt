@@ -31,13 +31,14 @@ class CardRenderer(
     private val openTelemetry: OpenTelemetry,
 ) {
 
-    suspend fun renderCard(card: Card): ByteArray {
+    suspend fun renderCard(card: Card, foil: Boolean = false): ByteArray {
         val avatar = loadAvatar(card.userId)
 
         val image = renderComposeScene(width = CARD_WIDTH + PADDING * 2, height = CARD_HEIGHT + PADDING * 2) {
             CardComposable(
                 card = card,
                 avatar = avatar,
+                foil = foil,
                 modifier = Modifier.padding(PADDING.dp)
             )
         }
@@ -47,7 +48,7 @@ class CardRenderer(
             .bytes
     }
 
-    suspend fun renderCards(cards: List<Card>): ByteArray {
+    suspend fun renderCards(cards: List<RenderableCard>): ByteArray {
         val columns = cards.size.coerceAtMost(5)
         val rows = (cards.size + 4) / 5
 
@@ -55,13 +56,12 @@ class CardRenderer(
         val height = rows * (CARD_HEIGHT + SPACING) - SPACING + PADDING * 2
 
         val cardsWithAvatars = coroutineScope {
-            cards.map { card ->
+            cards.map { renderable ->
                 async(Dispatchers.IO) {
-                    card to loadAvatar(card.userId)
+                    renderable to loadAvatar(renderable.card.userId)
                 }
             }.awaitAll()
         }
-
 
         val image = renderComposeScene(width = width, height = height) {
             FlowRow(
@@ -69,8 +69,8 @@ class CardRenderer(
                 verticalArrangement = Arrangement.spacedBy(SPACING.dp, Alignment.CenterVertically),
                 modifier = Modifier.padding(PADDING.dp)
             ) {
-                for ((card, avatar) in cardsWithAvatars) {
-                    CardComposable(card, avatar)
+                for ((renderable, avatar) in cardsWithAvatars) {
+                    CardComposable(renderable.card, avatar, renderable.foil)
                 }
             }
         }

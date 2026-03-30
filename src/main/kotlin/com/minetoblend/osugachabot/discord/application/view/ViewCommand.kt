@@ -45,7 +45,7 @@ class ViewCommand(
         }
 
         val ack = interaction.deferPublicResponse()
-        val cardImage = cardRenderer.renderCard(replica.card)
+        val cardImage = cardRenderer.renderCard(replica.card, replica.foil)
 
         ack.respond {
             addFile(

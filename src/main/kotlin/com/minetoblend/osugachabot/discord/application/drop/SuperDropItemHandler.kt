@@ -3,6 +3,7 @@ package com.minetoblend.osugachabot.discord.application.drop
 import com.minetoblend.osugachabot.discord.ConsumableItemHandler
 import com.minetoblend.osugachabot.drops.DropService
 import com.minetoblend.osugachabot.graphics.CardRenderer
+import com.minetoblend.osugachabot.graphics.toRenderableCard
 import com.minetoblend.osugachabot.inventory.ItemType
 import com.minetoblend.osugachabot.users.UserId
 import dev.kord.core.behavior.interaction.response.edit
@@ -29,7 +30,7 @@ class SuperDropItemHandler(
 
         val ack = interaction.deferPublicResponse()
 
-        val image = cardRenderer.renderCards(drop.cards.map { it.card })
+        val image = cardRenderer.renderCards(drop.cards.map { it.toRenderableCard() })
 
         val response = ack.respond {
             addFile(

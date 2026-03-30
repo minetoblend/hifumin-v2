@@ -24,6 +24,8 @@ class DroppedCardEntity(
     @Column(name = "card_condition", nullable = false)
     @Enumerated(EnumType.ORDINAL)
     var condition: CardCondition,
+    @Column(nullable = false)
+    var foil: Boolean = false,
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

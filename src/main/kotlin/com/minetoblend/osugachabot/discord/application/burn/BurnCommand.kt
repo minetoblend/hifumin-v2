@@ -129,7 +129,7 @@ class BurnCommand(
 
         suspend fun run() {
             val response = coroutineScope {
-                val cardImage = async { cardRenderer.renderCard(replica.card) }
+                val cardImage = async { cardRenderer.renderCard(replica.card, replica.foil) }
 
                 val ack = interaction.deferPublicResponse()
 

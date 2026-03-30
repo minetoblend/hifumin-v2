@@ -60,6 +60,7 @@ class DropServiceImpl(
                     cardIndex = index,
                     card = cardRepository.getReferenceById(card.id.value),
                     condition = rollRandomCondition(),
+                    foil = rollFoil(),
                 )
             )
         }
@@ -87,6 +88,7 @@ class DropServiceImpl(
                     cardIndex = index,
                     card = cardRepository.getReferenceById(card.id.value),
                     condition = rollRandomCondition(),
+                    foil = rollFoil(),
                 )
             )
         }
@@ -121,6 +123,7 @@ class DropServiceImpl(
             userId = userId.value,
             condition = droppedCard.condition,
             burnValue = computeBurnValue(droppedCard.card.followerCount, droppedCard.condition),
+            foil = droppedCard.foil,
         )
 
         val replica = cardReplicaRepository.save(replicaEntity)
@@ -128,6 +131,8 @@ class DropServiceImpl(
 
         return ClaimResult.Claimed(drop.toDomain(), replica.toDomain())
     }
+
+    private fun rollFoil(): Boolean = Math.random() < FOIL_CHANCE
 
     private fun rollRandomCondition(): CardCondition {
         val distribution = listOf<CardCondition>(
@@ -150,6 +155,7 @@ class DropServiceImpl(
         index = cardIndex,
         card = card.toDomain(),
         condition = condition,
+        foil = foil,
         claimedBy = claimedByUserId?.let { UserId(it) },
     )
 
@@ -169,10 +175,12 @@ class DropServiceImpl(
         card = card.toDomain(),
         userId = userId.toUserId(),
         condition = condition,
+        foil = foil,
     )
 
     companion object {
         private const val DROP_SIZE = 3
         private const val SUPER_DROP_SIZE = 10
+        private const val FOIL_CHANCE = 0.05
     }
 }

@@ -17,6 +17,7 @@ data class DroppedCard(
     val index: Int,
     val card: Card,
     val condition: CardCondition,
+    val foil: Boolean = false,
     val claimedBy: UserId? = null,
 )
 

@@ -3,22 +3,21 @@ package com.minetoblend.osugachabot.discord.application.drop
 import com.minetoblend.osugachabot.discord.SlashCommand
 import com.minetoblend.osugachabot.discord.interactionButton
 import com.minetoblend.osugachabot.drops.CreateDropResult
-import com.minetoblend.osugachabot.users.UserId
 import com.minetoblend.osugachabot.drops.Drop
 import com.minetoblend.osugachabot.drops.DropService
 import com.minetoblend.osugachabot.drops.DroppedCard
 import com.minetoblend.osugachabot.graphics.CardRenderer
+import com.minetoblend.osugachabot.graphics.toRenderableCard
+import com.minetoblend.osugachabot.users.UserId
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.core.behavior.interaction.respondEphemeral
-import dev.kord.core.behavior.interaction.respondPublic
 import dev.kord.core.behavior.interaction.response.edit
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.rest.builder.component.ActionRowBuilder
 import dev.kord.rest.builder.component.actionRow
-import dev.kord.rest.builder.message.addFile
-import io.ktor.client.request.forms.ChannelProvider
-import io.ktor.utils.io.ByteReadChannel
+import io.ktor.client.request.forms.*
+import io.ktor.utils.io.*
 import io.opentelemetry.context.Context
 import io.opentelemetry.extension.kotlin.asContextElement
 import kotlinx.coroutines.CoroutineScope
@@ -56,7 +55,7 @@ class DropCommand(
                 val drop = result.drop
                 val ack = interaction.deferPublicResponse()
 
-                val image = cardRenderer.renderCards(drop.cards.map { it.card })
+                val image = cardRenderer.renderCards(drop.cards.map { it.toRenderableCard() })
 
                 val response = ack.respond {
 
@@ -88,13 +87,14 @@ class DropCommand(
 }
 
 internal fun ActionRowBuilder.dropCardButton(drop: Drop, droppedCard: DroppedCard) {
+    val foilPrefix = if (droppedCard.foil) "✨ " else ""
     if (droppedCard.claimedBy == null) {
         interactionButton(ButtonStyle.Primary, ClaimButtonId(drop.id, droppedCard.index)) {
-            label = droppedCard.card.username
+            label = "$foilPrefix${droppedCard.card.username}"
         }
     } else {
         interactionButton(ButtonStyle.Secondary, ClaimButtonId(drop.id, droppedCard.index)) {
-            label = "Claimed: ${droppedCard.card.username}"
+            label = "Claimed: $foilPrefix${droppedCard.card.username}"
             disabled = true
         }
     }

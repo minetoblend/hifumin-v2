@@ -78,5 +78,6 @@ class CardReplicaServiceImpl(
         card = card.toDomain(),
         userId = userId.toUserId(),
         condition = condition,
+        foil = foil,
     )
 }

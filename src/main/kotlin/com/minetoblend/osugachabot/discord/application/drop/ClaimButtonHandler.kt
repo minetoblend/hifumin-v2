@@ -25,6 +25,7 @@ class ClaimButtonHandler(private val dropService: DropService) : ButtonInteracti
 
                     content = buildString {
                         append("${interaction.user.mention} you claimed the *${result.replica.card.username}* card `${result.replica.id.toDisplayId()}`!")
+                        if (result.replica.foil) append(" ✨ It's a foil card!")
                         append(" ")
                         append(
                             when (result.replica.condition) {

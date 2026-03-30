@@ -36,6 +36,7 @@ data class CardReplica(
     val card: Card,
     val userId: UserId,
     val condition: CardCondition,
+    val foil: Boolean = false,
 )
 
 val CardReplica.burnValue: Int

@@ -50,25 +50,29 @@ fun CardComposablePreview() {
         followerCount = 1000,
         globalRank = 1000,
         userId = 3,
-        rarity = SSR,
+        rarity = SR,
     )
 
-    CardComposable(card, modifier = Modifier.padding(16.dp))
+    CardComposable(card, foil = true, modifier = Modifier.padding(16.dp))
 }
 
 @Composable
 fun CardComposable(
     card: Card,
     avatar: ImageBitmap? = null,
+    foil: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     val shape = RoundedCornerShape(12.dp)
     val colors = CardColors.forRarity(card.rarity)
     val isEpic = card.rarity == CardRarity.SSR || card.rarity == CardRarity.EX
 
-    val elevation = if (isEpic) 24.dp else 12.dp
+    val elevation = if (foil) 28.dp else if (isEpic) 24.dp else 12.dp
     val borderWidth = if (isEpic) 3.dp else 2.dp
     val borderAlphas = if (isEpic) Triple(0.9f, 0.6f, 0.3f) else Triple(0.6f, 0.3f, 0.1f)
+
+    val glowColor = if (foil) foilGlowColor else colors.glow
+    val glowAlpha = if (foil) 0.9f else if (isEpic) 0.8f else 0.5f
 
     Box(
         modifier = modifier
@@ -76,8 +80,8 @@ fun CardComposable(
             .shadow(
                 elevation = elevation,
                 shape = shape,
-                ambientColor = colors.glow.copy(alpha = if (isEpic) 0.8f else 0.5f),
-                spotColor = colors.primary
+                ambientColor = glowColor.copy(alpha = glowAlpha),
+                spotColor = if (foil) foilGlowColor else colors.primary
             )
             .clip(shape)
             .background(Color(0xFF1A1A2E))
@@ -96,6 +100,10 @@ fun CardComposable(
             )
     ) {
         CardBackground(colors, isEpic)
+
+        if (foil) {
+            FoilOverlay()
+        }
 
         Column(
             modifier = Modifier.fillMaxSize()
@@ -137,23 +145,23 @@ private fun CardHeader(card: Card, colors: CardColors) {
         val isEpicRarity = card.rarity == CardRarity.SSR || card.rarity == CardRarity.EX
 
         Surface(
-            color = if (isEpicRarity) colors.primary.copy(alpha = 0.12f) else Color.Transparent,
-            shape = RoundedCornerShape(6.dp),
-        ) {
-            Text(
-                text = card.rarity.name.uppercase(),
-                modifier = if (isEpicRarity) Modifier.padding(horizontal = 6.dp, vertical = 2.dp) else Modifier,
-                style = TextStyle(
-                    brush = Brush.horizontalGradient(
-                        listOf(colors.primary, colors.secondary)
-                    ),
-                    fontSize = if (isEpicRarity) 18.sp else 16.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    fontFamily = FontFamily.Monospace,
-                    letterSpacing = if (isEpicRarity) 1.2.sp else 0.8.sp
+                color = if (isEpicRarity) colors.primary.copy(alpha = 0.12f) else Color.Transparent,
+                shape = RoundedCornerShape(6.dp),
+            ) {
+                Text(
+                    text = card.rarity.name.uppercase(),
+                    modifier = if (isEpicRarity) Modifier.padding(horizontal = 6.dp, vertical = 2.dp) else Modifier,
+                    style = TextStyle(
+                        brush = Brush.horizontalGradient(
+                            listOf(colors.primary, colors.secondary)
+                        ),
+                        fontSize = if (isEpicRarity) 18.sp else 16.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        fontFamily = FontFamily.Monospace,
+                        letterSpacing = if (isEpicRarity) 1.2.sp else 0.8.sp
+                    )
                 )
-            )
-        }
+            }
 
 //        if (card is CardInfo.UserCard) {
 //            androidx.compose.material.Text(
