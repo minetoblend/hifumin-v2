@@ -94,7 +94,7 @@ class TradeServiceImpl(
         trade.status = Accepted
         tradeRepository.save(trade)
 
-        eventPublisher.publishEvent(TradeAcceptedEvent(userId))
+        eventPublisher.publishEvent(TradeAcceptedEvent(userId, trade.initiatorUserId.toUserId()))
 
         return AcceptTradeResult.Accepted(
             trade = trade.toDomain(),
