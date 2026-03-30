@@ -2,6 +2,7 @@ package com.minetoblend.osugachabot.discord.application.view
 
 import com.minetoblend.osugachabot.cards.CardReplicaId
 import com.minetoblend.osugachabot.cards.CardReplicaService
+import com.minetoblend.osugachabot.cards.burnValue
 import com.minetoblend.osugachabot.cards.prettyName
 import com.minetoblend.osugachabot.discord.SlashCommand
 import com.minetoblend.osugachabot.graphics.CardRenderer
@@ -59,6 +60,31 @@ class ViewCommand(
                 field {
                     name = "Condition"
                     value = replica.condition.prettyName()
+                    inline = true
+                }
+
+                field {
+                    name = "Rarity"
+                    value = replica.card.rarity.name
+                    inline = true
+                }
+
+                field {
+                    name = "Foil"
+                    value = if (replica.foil) "Yes" else "No"
+                    inline = true
+                }
+
+                field {
+                    name = "Burn Value"
+                    value = replica.burnValue.toString()
+                    inline = true
+                }
+
+                field {
+                    name = "Owner"
+                    value = "<@${replica.userId.value}>"
+                    inline = true
                 }
 
                 image = "attachment://card.png"
