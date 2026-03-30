@@ -28,6 +28,13 @@ jobs:
           name: test-results
           path: build/reports/tests/test/
 
+      - name: Upload screenshot diffs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshot-diffs
+          path: build/test-screenshots/
+
   build-image:
     runs-on: ubuntu-latest
     needs: test
