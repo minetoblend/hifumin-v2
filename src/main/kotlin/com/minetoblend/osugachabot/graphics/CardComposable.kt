@@ -36,8 +36,11 @@ import androidx.compose.ui.unit.sp
 import com.minetoblend.osugachabot.cards.Card
 import com.minetoblend.osugachabot.cards.CardId
 import com.minetoblend.osugachabot.cards.CardRarity
+import com.minetoblend.osugachabot.generated.resources.Res
+import com.minetoblend.osugachabot.generated.resources.default_avatar
 import com.minetoblend.osugachabot.graphics.CardRenderer.Companion.CARD_HEIGHT
 import com.minetoblend.osugachabot.graphics.CardRenderer.Companion.CARD_WIDTH
+import org.jetbrains.compose.resources.imageResource
 
 @Composable
 @Preview
@@ -53,7 +56,22 @@ fun CardComposablePreview() {
         rarity = SR,
     )
 
-    CardComposable(card, foil = true, modifier = Modifier.padding(16.dp))
+    val avatar = imageResource(Res.drawable.default_avatar)
+
+    Row {
+        CardComposable(
+            card = card,
+            foil = false,
+            avatar = avatar,
+            modifier = Modifier.padding(16.dp)
+        )
+        CardComposable(
+            card = card,
+            foil = true,
+            avatar = avatar,
+            modifier = Modifier.padding(16.dp)
+        )
+    }
 }
 
 @Composable
@@ -101,10 +119,6 @@ fun CardComposable(
     ) {
         CardBackground(colors, isEpic)
 
-        if (foil) {
-            FoilOverlay()
-        }
-
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
@@ -112,6 +126,10 @@ fun CardComposable(
             CardImage(avatar)
             Spacer(modifier = Modifier.weight(1f))
             CardFooter(card, colors)
+        }
+
+        if (foil) {
+            FoilOverlay()
         }
     }
 }

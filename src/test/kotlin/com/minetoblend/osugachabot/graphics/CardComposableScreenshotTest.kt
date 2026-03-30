@@ -40,8 +40,24 @@ class CardComposableScreenshotTest {
         assertMatchesSnapshot("card-EX", render(cardForRarity(CardRarity.EX)))
 
     @Test
-    fun `card foil matches snapshot`() =
-        assertMatchesSnapshot("card-foil", render(cardForRarity(CardRarity.SR), foil = true))
+    fun `card N foil matches snapshot`() =
+        assertMatchesSnapshot("card-N-foil", render(cardForRarity(CardRarity.N), foil = true))
+
+    @Test
+    fun `card R foil matches snapshot`() =
+        assertMatchesSnapshot("card-R-foil", render(cardForRarity(CardRarity.R), foil = true))
+
+    @Test
+    fun `card SR foil matches snapshot`() =
+        assertMatchesSnapshot("card-SR-foil", render(cardForRarity(CardRarity.SR), foil = true))
+
+    @Test
+    fun `card SSR foil matches snapshot`() =
+        assertMatchesSnapshot("card-SSR-foil", render(cardForRarity(CardRarity.SSR), foil = true))
+
+    @Test
+    fun `card EX foil matches snapshot`() =
+        assertMatchesSnapshot("card-EX-foil", render(cardForRarity(CardRarity.EX), foil = true))
 
     @Test
     fun `card without global rank matches snapshot`() =
