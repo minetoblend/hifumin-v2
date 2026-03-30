@@ -13,15 +13,9 @@ import dev.kord.core.behavior.interaction.respondPublic
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Component
-import kotlin.time.Clock
-import kotlin.time.Duration
+import com.minetoblend.osugachabot.discord.utils.toDiscordRelativeTimestamp
 
 private const val DAILY_GOLD_REWARD = 100L
-
-private fun Duration.toDiscordRelativeTimestamp(): String {
-    val epochSeconds = (Clock.System.now() + this).epochSeconds
-    return "<t:$epochSeconds:R>"
-}
 
 @Component
 class DailyCommand(

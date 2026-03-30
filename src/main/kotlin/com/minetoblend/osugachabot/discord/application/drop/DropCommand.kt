@@ -23,15 +23,9 @@ import io.opentelemetry.extension.kotlin.asContextElement
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.minetoblend.osugachabot.discord.utils.toDiscordRelativeTimestamp
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
-import kotlin.time.Clock
-import kotlin.time.Duration
-
-private fun Duration.toDiscordRelativeTimestamp(): String {
-    val epochSeconds = (Clock.System.now() + this).epochSeconds
-    return "<t:$epochSeconds:R>"
-}
 
 @Component
 class DropCommand(

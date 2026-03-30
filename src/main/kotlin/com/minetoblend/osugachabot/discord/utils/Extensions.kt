@@ -3,6 +3,13 @@ package com.minetoblend.osugachabot.discord.utils
 import dev.kord.rest.builder.interaction.BaseInputChatBuilder
 import dev.kord.rest.builder.interaction.StringChoiceBuilder
 import dev.kord.rest.builder.interaction.string
+import kotlin.time.Clock
+import kotlin.time.Duration
+
+fun Duration.toDiscordRelativeTimestamp(): String {
+    val epochSeconds = (Clock.System.now() + this).epochSeconds
+    return "<t:$epochSeconds:R>"
+}
 
 fun BaseInputChatBuilder.cardId(
     name: String,

@@ -7,14 +7,8 @@ import com.minetoblend.osugachabot.discord.SlashCommand
 import com.minetoblend.osugachabot.users.UserId
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
+import com.minetoblend.osugachabot.discord.utils.toDiscordRelativeTimestamp
 import org.springframework.stereotype.Component
-import kotlin.time.Clock
-import kotlin.time.Duration
-
-private fun Duration.toDiscordRelativeTimestamp(): String {
-    val epochSeconds = (Clock.System.now() + this).epochSeconds
-    return "<t:$epochSeconds:R>"
-}
 
 @Component
 class CooldownCommand(

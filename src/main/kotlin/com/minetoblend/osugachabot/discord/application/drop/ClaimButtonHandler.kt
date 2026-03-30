@@ -7,8 +7,8 @@ import com.minetoblend.osugachabot.users.toUserId
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.behavior.interaction.respondPublic
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
+import com.minetoblend.osugachabot.discord.utils.toDiscordRelativeTimestamp
 import org.springframework.stereotype.Component
-import kotlin.time.Clock
 
 @Component
 class ClaimButtonHandler(private val dropService: DropService) : ButtonInteractionHandler {
@@ -51,9 +51,8 @@ class ClaimButtonHandler(private val dropService: DropService) : ButtonInteracti
             }
 
             is ClaimResult.OnCooldown -> {
-                val epochSeconds = (Clock.System.now() + result.remaining).epochSeconds
                 interaction.respondEphemeral {
-                    content = "You are claiming too fast! Try again <t:$epochSeconds:R>."
+                    content = "You are claiming too fast! Try again ${result.remaining.toDiscordRelativeTimestamp()}."
                 }
             }
 
