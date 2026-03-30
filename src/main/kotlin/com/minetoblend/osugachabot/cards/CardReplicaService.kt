@@ -11,6 +11,8 @@ interface CardReplicaService {
 
     fun burnCard(id: CardReplicaId, userId: UserId): BurnCardResult
 
+    fun upgradeCard(id: CardReplicaId, userId: UserId): UpgradeCardResult
+
     fun getCardCount(userId: UserId): Int
 
     fun findByUserId(userId: UserId, pageable: Pageable): Page<CardReplica>
@@ -26,4 +28,13 @@ sealed interface BurnCardResult {
     data object Success : BurnCardResult
     data object NotFound : BurnCardResult
     data object NotOwned : BurnCardResult
+}
+
+sealed interface UpgradeCardResult {
+    data class Success(val newCondition: CardCondition) : UpgradeCardResult
+    data class Failed(val condition: CardCondition) : UpgradeCardResult
+    data object AlreadyMint : UpgradeCardResult
+    data object NotFound : UpgradeCardResult
+    data object NotOwned : UpgradeCardResult
+    data object InsufficientGold : UpgradeCardResult
 }

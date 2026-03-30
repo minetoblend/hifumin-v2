@@ -6,6 +6,7 @@ import com.minetoblend.osugachabot.cards.persistence.CardReplicaEntity
 import com.minetoblend.osugachabot.cards.persistence.CardReplicaRepository
 import com.minetoblend.osugachabot.inventory.InventoryService
 import com.minetoblend.osugachabot.inventory.ItemType
+import com.minetoblend.osugachabot.inventory.RemoveItemsResult
 import com.minetoblend.osugachabot.cards.CardBurnedEvent
 import com.minetoblend.osugachabot.users.UserId
 import com.minetoblend.osugachabot.users.toUserId
@@ -14,12 +15,15 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import kotlin.random.Random
 
 @Service
 class CardReplicaServiceImpl(
     private val cardReplicaRepository: CardReplicaRepository,
     private val inventoryService: InventoryService,
     private val eventPublisher: ApplicationEventPublisher,
+    private val random: Random,
 ) : CardReplicaService {
     override fun findById(id: CardReplicaId): CardReplica? =
         cardReplicaRepository.findByIdOrNull(id.value)?.toDomain()
@@ -60,6 +64,31 @@ class CardReplicaServiceImpl(
         eventPublisher.publishEvent(CardBurnedEvent(userId))
 
         return BurnCardResult.Success
+    }
+
+    @Transactional
+    override fun upgradeCard(id: CardReplicaId, userId: UserId): UpgradeCardResult {
+        val entity = cardReplicaRepository.findByIdOrNull(id.value)
+            ?: return UpgradeCardResult.NotFound
+
+        if (userId != entity.userId.toUserId())
+            return UpgradeCardResult.NotOwned
+
+        if (entity.condition == CardCondition.Mint)
+            return UpgradeCardResult.AlreadyMint
+
+        val cost = entity.condition.upgradeCost
+        when (inventoryService.removeItems(userId, ItemType.Gold, cost)) {
+            RemoveItemsResult.InsufficientItems -> return UpgradeCardResult.InsufficientGold
+            RemoveItemsResult.Success -> {}
+        }
+
+        return if (random.nextDouble() < entity.condition.upgradeSuccessRate) {
+            entity.condition = entity.condition.nextCondition()
+            UpgradeCardResult.Success(entity.condition)
+        } else {
+            UpgradeCardResult.Failed(entity.condition)
+        }
     }
 
     private fun CardEntity.toDomain() = Card(
