@@ -1,0 +1,38 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0015-deduplicate-cards
+      author: osugachabot
+      changes:
+        # Update card_replicas to point to the kept card (lowest id per user_id)
+        - sql:
+            sql: >
+              UPDATE card_replicas cr
+              JOIN cards c ON cr.card_id = c.id
+              JOIN (SELECT user_id, MIN(id) AS keep_id FROM cards GROUP BY user_id) k ON c.user_id = k.user_id
+              SET cr.card_id = k.keep_id
+              WHERE cr.card_id != k.keep_id
+
+        # Update dropped_cards to point to the kept card
+        - sql:
+            sql: >
+              UPDATE dropped_cards dc
+              JOIN cards c ON dc.card_id = c.id
+              JOIN (SELECT user_id, MIN(id) AS keep_id FROM cards GROUP BY user_id) k ON c.user_id = k.user_id
+              SET dc.card_id = k.keep_id
+              WHERE dc.card_id != k.keep_id
+
+        # Update wishlisted_cards to point to the kept card
+        - sql:
+            sql: >
+              UPDATE wishlisted_cards w
+              JOIN cards c ON w.card_id = c.id
+              JOIN (SELECT user_id, MIN(id) AS keep_id FROM cards GROUP BY user_id) k ON c.user_id = k.user_id
+              SET w.card_id = k.keep_id
+              WHERE w.card_id != k.keep_id
+
+        # Delete duplicate cards (keep the one with the lowest id per user_id)
+        - sql:
+            sql: >
+              DELETE c FROM cards c
+              JOIN (SELECT user_id, MIN(id) AS keep_id FROM cards GROUP BY user_id) k ON c.user_id = k.user_id
+              WHERE c.id != k.keep_id
