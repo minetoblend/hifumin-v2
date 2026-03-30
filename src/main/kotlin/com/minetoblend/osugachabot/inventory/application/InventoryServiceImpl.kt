@@ -4,7 +4,6 @@ import com.minetoblend.osugachabot.inventory.InventoryItem
 import com.minetoblend.osugachabot.inventory.InventoryService
 import com.minetoblend.osugachabot.inventory.ItemType
 import com.minetoblend.osugachabot.inventory.RemoveItemsResult
-import com.minetoblend.osugachabot.inventory.persistence.InventoryItemEntity
 import com.minetoblend.osugachabot.inventory.persistence.InventoryItemRepository
 import com.minetoblend.osugachabot.users.UserId
 import org.springframework.stereotype.Service
@@ -30,18 +29,15 @@ class InventoryServiceImpl(
     @Transactional
     override fun addItems(userId: UserId, itemType: ItemType, amount: Long) {
         require(amount > 0) { "amount must be positive" }
-        val entity = inventoryItemRepository.findByUserIdAndItemType(userId.value, itemType)
-        if (entity == null) {
-            inventoryItemRepository.save(InventoryItemEntity(userId = userId.value, itemType = itemType, amount = amount))
-        } else {
-            entity.amount += amount
-        }
+        inventoryItemRepository.insertIgnore(userId.value, itemType)
+        val entity = inventoryItemRepository.findByUserIdAndItemTypeForUpdate(userId.value, itemType)!!
+        entity.amount += amount
     }
 
     @Transactional
     override fun removeItems(userId: UserId, itemType: ItemType, amount: Long): RemoveItemsResult {
         require(amount > 0) { "amount must be positive" }
-        val entity = inventoryItemRepository.findByUserIdAndItemType(userId.value, itemType)
+        val entity = inventoryItemRepository.findByUserIdAndItemTypeForUpdate(userId.value, itemType)
             ?: return RemoveItemsResult.InsufficientItems
 
         if (entity.amount < amount) return RemoveItemsResult.InsufficientItems

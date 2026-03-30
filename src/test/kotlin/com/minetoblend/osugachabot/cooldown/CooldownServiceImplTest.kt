@@ -10,7 +10,11 @@ import org.springframework.context.annotation.Import
 import org.springframework.jdbc.core.JdbcTemplate
 import java.sql.Timestamp
 import java.time.Instant
+import java.util.concurrent.CyclicBarrier
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.hours
@@ -191,6 +195,27 @@ class CooldownServiceImplTest {
         assertIs<CooldownResult.Ready>(first)
         assertIs<CooldownResult.OnCooldown>(second)
         assertTrue(second.remaining.isPositive())
+    }
+
+    @Test
+    fun `concurrent tryConsume calls result in only one Ready`() {
+        cleanup()
+        val threadCount = 5
+        val barrier = CyclicBarrier(threadCount)
+        val executor = Executors.newFixedThreadPool(threadCount)
+
+        val futures: List<Future<CooldownResult>> = (1..threadCount).map {
+            executor.submit<CooldownResult> {
+                barrier.await()
+                cooldownService.tryConsume(userId, type)
+            }
+        }
+
+        val results = futures.map { it.get() }
+        executor.shutdown()
+
+        val readyCount = results.count { it is CooldownResult.Ready }
+        assertEquals(1, readyCount, "Expected exactly one Ready result but got $readyCount")
     }
 
     @Test

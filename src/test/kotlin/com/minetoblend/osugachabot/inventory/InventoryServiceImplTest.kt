@@ -5,6 +5,8 @@ import com.minetoblend.osugachabot.users.UserId
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
+import java.util.concurrent.CyclicBarrier
+import java.util.concurrent.Executors
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -88,5 +90,50 @@ class InventoryServiceImplTest {
         assertEquals(1, items.size)
         assertEquals(ItemType.Gold, items[0].itemType)
         assertEquals(42L, items[0].amount)
+    }
+
+    @Test
+    fun `concurrent addItems calls accumulate correctly`() {
+        val userId = UserId(900009L)
+        val threadCount = 10
+        val amountPerThread = 5L
+        val barrier = CyclicBarrier(threadCount)
+        val executor = Executors.newFixedThreadPool(threadCount)
+
+        val futures = (1..threadCount).map {
+            executor.submit {
+                barrier.await()
+                inventoryService.addItems(userId, ItemType.Gold, amountPerThread)
+            }
+        }
+
+        futures.forEach { it.get() }
+        executor.shutdown()
+
+        assertEquals(threadCount * amountPerThread, inventoryService.getItem(userId, ItemType.Gold).amount)
+    }
+
+    @Test
+    fun `concurrent removeItems calls do not over-remove`() {
+        val userId = UserId(900010L)
+        inventoryService.addItems(userId, ItemType.Gold, 1L)
+
+        val threadCount = 5
+        val barrier = CyclicBarrier(threadCount)
+        val executor = Executors.newFixedThreadPool(threadCount)
+
+        val futures = (1..threadCount).map {
+            executor.submit<RemoveItemsResult> {
+                barrier.await()
+                inventoryService.removeItems(userId, ItemType.Gold, 1L)
+            }
+        }
+
+        val results = futures.map { it.get() }
+        executor.shutdown()
+
+        val successCount = results.count { it == RemoveItemsResult.Success }
+        assertEquals(1, successCount, "Expected exactly one successful removal but got $successCount")
+        assertEquals(0L, inventoryService.getItem(userId, ItemType.Gold).amount)
     }
 }
