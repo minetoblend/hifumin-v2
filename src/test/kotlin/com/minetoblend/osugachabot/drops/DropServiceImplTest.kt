@@ -416,8 +416,8 @@ class DropServiceImplTest {
         }
 
         assertNotNull(stolenResult, "Dropper should win at least once in 50 attempts")
-        assertEquals(dropperUserId, stolenResult!!.replica.userId)
-        assertEquals(claimerUserId, stolenResult!!.stolenFrom)
+        assertEquals(dropperUserId, stolenResult.replica.userId)
+        assertEquals(claimerUserId, stolenResult.stolenFrom)
     }
 
     @Test
@@ -439,7 +439,7 @@ class DropServiceImplTest {
         }
 
         assertNotNull(failedResult, "Dropper should fail at least once in 50 attempts")
-        assertEquals(claimerUserId, failedResult!!.claimedBy)
+        assertEquals(claimerUserId, failedResult.claimedBy)
     }
 
     @Test
@@ -484,11 +484,11 @@ class DropServiceImplTest {
 
         assertNotNull(stolenResult)
         // Same replica, now owned by dropper
-        assertEquals(originalReplicaId, stolenResult!!.replica.id.value)
-        assertEquals(dropperUserId, stolenResult!!.replica.userId)
-        val inDb = cardReplicaRepository.findById(stolenResult!!.replica.id.value).orElse(null)
+        assertEquals(originalReplicaId, stolenResult.replica.id.value)
+        assertEquals(dropperUserId, stolenResult.replica.userId)
+        val inDb = cardReplicaRepository.findById(stolenResult.replica.id.value).orElse(null)
         assertNotNull(inDb)
-        assertEquals(dropperUserId.value, inDb!!.userId)
+        assertEquals(dropperUserId.value, inDb.userId)
     }
 
     @Test
