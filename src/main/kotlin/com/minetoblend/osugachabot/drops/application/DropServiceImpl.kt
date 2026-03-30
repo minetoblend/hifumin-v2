@@ -122,7 +122,7 @@ class DropServiceImpl(
             card = droppedCard.card,
             userId = userId.value,
             condition = droppedCard.condition,
-            burnValue = computeBurnValue(droppedCard.card.followerCount, droppedCard.condition),
+            burnValue = computeBurnValue(droppedCard.card.followerCount, droppedCard.condition, droppedCard.foil),
             foil = droppedCard.foil,
         )
 

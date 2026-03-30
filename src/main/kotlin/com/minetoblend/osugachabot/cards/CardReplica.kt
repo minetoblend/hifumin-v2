@@ -40,4 +40,4 @@ data class CardReplica(
 )
 
 val CardReplica.burnValue: Int
-    get() = computeBurnValue(card.followerCount, condition)
+    get() = computeBurnValue(card.followerCount, condition, foil)
