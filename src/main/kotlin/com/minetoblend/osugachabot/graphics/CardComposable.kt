@@ -4,17 +4,7 @@ import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -29,18 +19,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.minetoblend.osugachabot.cards.Card
 import com.minetoblend.osugachabot.cards.CardId
 import com.minetoblend.osugachabot.cards.CardRarity
-import com.minetoblend.osugachabot.generated.resources.Res
-import com.minetoblend.osugachabot.generated.resources.default_avatar
+import com.minetoblend.osugachabot.generated.resources.*
 import com.minetoblend.osugachabot.graphics.CardRenderer.Companion.CARD_HEIGHT
 import com.minetoblend.osugachabot.graphics.CardRenderer.Companion.CARD_WIDTH
 import org.jetbrains.compose.resources.imageResource
+
 
 @Composable
 @Preview
@@ -152,7 +141,7 @@ private fun CardHeader(card: Card, colors: CardColors) {
                         color = colors.onPrimary,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
-                        fontFamily = FontFamily.Default,
+                        fontFamily = Fonts.InterSansSerif,
                         letterSpacing = 0.4.sp
                     ),
                     maxLines = 1
@@ -175,7 +164,7 @@ private fun CardHeader(card: Card, colors: CardColors) {
                         ),
                         fontSize = if (isEpicRarity) 18.sp else 16.sp,
                         fontWeight = FontWeight.ExtraBold,
-                        fontFamily = FontFamily.Monospace,
+                        fontFamily = Fonts.JetBrainsMono,
                         letterSpacing = if (isEpicRarity) 1.2.sp else 0.8.sp
                     )
                 )
@@ -249,7 +238,7 @@ private fun CardFooter(card: Card, colors: CardColors) {
                             color = colors.onSurfaceVariant,
                             fontSize = 9.sp,
                             fontWeight = FontWeight.SemiBold,
-                            fontFamily = FontFamily.Default,
+                            fontFamily = Fonts.InterSansSerif,
                             letterSpacing = 1.sp
                         )
                     )
@@ -259,7 +248,7 @@ private fun CardFooter(card: Card, colors: CardColors) {
                             color = colors.onSurface,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold,
-                            fontFamily = FontFamily.Default,
+                            fontFamily = Fonts.InterSansSerif,
                             letterSpacing = 0.2.sp
                         )
                     )
@@ -274,7 +263,7 @@ private fun CardFooter(card: Card, colors: CardColors) {
                     color = colors.onSurfaceVariant,
                     fontSize = 9.sp,
                     fontWeight = FontWeight.SemiBold,
-                    fontFamily = FontFamily.Default,
+                    fontFamily = Fonts.InterSansSerif,
                     letterSpacing = 1.sp
                 )
             )
@@ -284,7 +273,7 @@ private fun CardFooter(card: Card, colors: CardColors) {
                     color = colors.onSurface,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
-                    fontFamily = FontFamily.Default,
+                    fontFamily = Fonts.InterSansSerif,
                     letterSpacing = 0.2.sp
                 )
             )
