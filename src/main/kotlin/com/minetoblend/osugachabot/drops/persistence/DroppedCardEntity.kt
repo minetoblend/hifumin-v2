@@ -2,6 +2,7 @@ package com.minetoblend.osugachabot.drops.persistence
 
 import com.minetoblend.osugachabot.cards.CardCondition
 import com.minetoblend.osugachabot.cards.persistence.CardEntity
+import com.minetoblend.osugachabot.cards.persistence.CardReplicaEntity
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -9,7 +10,9 @@ import jakarta.persistence.Enumerated
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 
 @Entity
@@ -33,4 +36,8 @@ class DroppedCardEntity(
 
     @Column(nullable = true)
     var claimedByUserId: Long? = null
+
+    @OneToOne(optional = true)
+    @JoinColumn(name = "claimed_replica_id", nullable = true)
+    var claimedReplica: CardReplicaEntity? = null
 }

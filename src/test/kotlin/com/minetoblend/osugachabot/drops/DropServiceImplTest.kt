@@ -386,6 +386,147 @@ class DropServiceImplTest {
     }
 
     @Test
+    fun `claimCard by non-dropper on already-claimed card returns AlreadyClaimed`() {
+        val drop = createDrop(UserId(1L))
+        val claimer = UserId(2L)
+        val thirdParty = UserId(3L)
+
+        dropService.claimCard(drop.id, 0, claimer)
+        val result = dropService.claimCard(drop.id, 0, thirdParty)
+
+        assertIs<ClaimResult.AlreadyClaimed>(result)
+    }
+
+    @Test
+    fun `claimCard dropper pressing on already-claimed card can result in StolenBack`() {
+        val dropperUserId = UserId(1L)
+        val claimerUserId = UserId(99L)
+        var stolenResult: ClaimResult.StolenBack? = null
+
+        repeat(50) {
+            if (stolenResult != null) return@repeat
+            seedCards()
+            jdbcTemplate.update("DELETE FROM dropped_cards")
+            jdbcTemplate.update("DELETE FROM drops")
+            jdbcTemplate.update("DELETE FROM cooldowns")
+            val drop = (dropService.createDrop(dropperUserId) as CreateDropResult.Created).drop
+            dropService.claimCard(drop.id, 0, claimerUserId)
+            val result = dropService.claimCard(drop.id, 0, dropperUserId)
+            if (result is ClaimResult.StolenBack) stolenResult = result
+        }
+
+        assertNotNull(stolenResult, "Dropper should win at least once in 50 attempts")
+        assertEquals(dropperUserId, stolenResult!!.replica.userId)
+        assertEquals(claimerUserId, stolenResult!!.stolenFrom)
+    }
+
+    @Test
+    fun `claimCard dropper pressing on already-claimed card can result in StealFailed`() {
+        val dropperUserId = UserId(1L)
+        val claimerUserId = UserId(99L)
+        var failedResult: ClaimResult.StealFailed? = null
+
+        repeat(50) {
+            if (failedResult != null) return@repeat
+            seedCards()
+            jdbcTemplate.update("DELETE FROM dropped_cards")
+            jdbcTemplate.update("DELETE FROM drops")
+            jdbcTemplate.update("DELETE FROM cooldowns")
+            val drop = (dropService.createDrop(dropperUserId) as CreateDropResult.Created).drop
+            dropService.claimCard(drop.id, 0, claimerUserId)
+            val result = dropService.claimCard(drop.id, 0, dropperUserId)
+            if (result is ClaimResult.StealFailed) failedResult = result
+        }
+
+        assertNotNull(failedResult, "Dropper should fail at least once in 50 attempts")
+        assertEquals(claimerUserId, failedResult!!.claimedBy)
+    }
+
+    @Test
+    fun `claimCard steal probability is approximately 75 percent`() {
+        val dropperUserId = UserId(1L)
+        val claimerUserId = UserId(99L)
+        var stolenCount = 0
+        val iterations = 100
+
+        repeat(iterations) {
+            seedCards()
+            jdbcTemplate.update("DELETE FROM dropped_cards")
+            jdbcTemplate.update("DELETE FROM drops")
+            jdbcTemplate.update("DELETE FROM cooldowns")
+            val drop = (dropService.createDrop(dropperUserId) as CreateDropResult.Created).drop
+            dropService.claimCard(drop.id, 0, claimerUserId)
+            if (dropService.claimCard(drop.id, 0, dropperUserId) is ClaimResult.StolenBack) stolenCount++
+        }
+
+        assertTrue(stolenCount in 55..95, "Steal rate should be roughly 75%, got $stolenCount/$iterations stolen")
+    }
+
+    @Test
+    fun `claimCard StolenBack transfers replica ownership to dropper`() {
+        val dropperUserId = UserId(1L)
+        val claimerUserId = UserId(99L)
+        var stolenResult: ClaimResult.StolenBack? = null
+        var originalReplicaId: Long? = null
+
+        repeat(50) {
+            if (stolenResult != null) return@repeat
+            seedCards()
+            jdbcTemplate.update("DELETE FROM dropped_cards")
+            jdbcTemplate.update("DELETE FROM drops")
+            jdbcTemplate.update("DELETE FROM cooldowns")
+            val drop = (dropService.createDrop(dropperUserId) as CreateDropResult.Created).drop
+            val claimed = dropService.claimCard(drop.id, 0, claimerUserId)
+            if (claimed is ClaimResult.Claimed) originalReplicaId = claimed.replica.id.value
+            val result = dropService.claimCard(drop.id, 0, dropperUserId)
+            if (result is ClaimResult.StolenBack) stolenResult = result
+        }
+
+        assertNotNull(stolenResult)
+        // Same replica, now owned by dropper
+        assertEquals(originalReplicaId, stolenResult!!.replica.id.value)
+        assertEquals(dropperUserId, stolenResult!!.replica.userId)
+        val inDb = cardReplicaRepository.findById(stolenResult!!.replica.id.value).orElse(null)
+        assertNotNull(inDb)
+        assertEquals(dropperUserId.value, inDb!!.userId)
+    }
+
+    @Test
+    fun `claimCard dropper steal returns StealNotPossible when replica was burned`() {
+        val dropperUserId = UserId(1L)
+        val claimerUserId = UserId(99L)
+        val drop = createDrop(dropperUserId)
+
+        val claimed = dropService.claimCard(drop.id, 0, claimerUserId) as ClaimResult.Claimed
+        // Simulate burn: delete the replica (ON DELETE SET NULL clears the FK)
+        cardReplicaRepository.deleteById(claimed.replica.id.value)
+
+        val result = dropService.claimCard(drop.id, 0, dropperUserId)
+
+        assertIs<ClaimResult.StealNotPossible>(result)
+    }
+
+    @Test
+    fun `claimCard dropper steal returns StealNotPossible when replica was traded away`() {
+        val dropperUserId = UserId(1L)
+        val claimerUserId = UserId(99L)
+        val tradedToUserId = UserId(999L)
+        val drop = createDrop(dropperUserId)
+
+        val claimed = dropService.claimCard(drop.id, 0, claimerUserId) as ClaimResult.Claimed
+        // Simulate trade: reassign replica to another user
+        jdbcTemplate.update(
+            "UPDATE card_replicas SET user_id = ? WHERE id = ?",
+            tradedToUserId.value,
+            claimed.replica.id.value,
+        )
+
+        val result = dropService.claimCard(drop.id, 0, dropperUserId)
+
+        assertIs<ClaimResult.StealNotPossible>(result)
+    }
+
+    @Test
     fun `concurrent claims on the same card result in only one replica`() {
         val drop = createDrop()
         val threadCount = 5

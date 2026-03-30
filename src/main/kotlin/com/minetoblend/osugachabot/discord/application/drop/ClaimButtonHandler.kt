@@ -21,7 +21,6 @@ class ClaimButtonHandler(private val dropService: DropService) : ButtonInteracti
         when (val result = dropService.claimCard(dropId, cardIndex, userId)) {
             is ClaimResult.Claimed -> {
                 interaction.respondPublic {
-
                     content = buildString {
                         append("${interaction.user.mention} you claimed the *${result.replica.card.username}* card `${result.replica.id.toDisplayId()}`!")
                         if (result.replica.foil) append(" ✨ It's a foil card!")
@@ -35,6 +34,24 @@ class ClaimButtonHandler(private val dropService: DropService) : ButtonInteracti
                             }
                         )
                     }
+                }
+            }
+
+            is ClaimResult.StolenBack -> {
+                interaction.respondPublic {
+                    content = "${interaction.user.mention} you fought <@${result.stolenFrom.value}> over the *${result.replica.card.username}* card and came out on top!"
+                }
+            }
+
+            is ClaimResult.StealFailed -> {
+                interaction.respondPublic {
+                    content = "${interaction.user.mention} you fought <@${result.claimedBy.value}> over this card and lost!"
+                }
+            }
+
+            ClaimResult.StealNotPossible -> {
+                interaction.respondEphemeral {
+                    content = "This card has already been traded or burned — there's nothing left to steal."
                 }
             }
 

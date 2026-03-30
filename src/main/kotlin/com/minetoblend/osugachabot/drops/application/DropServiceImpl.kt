@@ -106,8 +106,28 @@ class DropServiceImpl(
 
         val droppedCard = drop.cards.find { it.cardIndex == cardIndex } ?: return ClaimResult.DropNotFound
 
-        if (droppedCard.claimedByUserId != null)
-            return ClaimResult.AlreadyClaimed(drop.toDomain())
+        if (droppedCard.claimedByUserId != null) {
+            val originalClaimer = UserId(droppedCard.claimedByUserId!!)
+            val dropperUserId = drop.createdByUserId?.let { UserId(it) }
+
+            if (dropperUserId == null || dropperUserId != userId)
+                return ClaimResult.AlreadyClaimed(drop.toDomain())
+
+            // Dropper is pressing on an already-claimed card — check the replica is still theirs to steal
+            val replica = droppedCard.claimedReplica
+            if (replica == null || replica.userId != originalClaimer.value)
+                return ClaimResult.StealNotPossible
+
+            // Contest
+            return if (Math.random() < STEAL_CHANCE) {
+                droppedCard.claimedByUserId = userId.value
+                replica.userId = userId.value
+                eventPublisher.publishEvent(CardClaimedEvent(userId))
+                ClaimResult.StolenBack(drop.toDomain(), replica.toDomain(), originalClaimer)
+            } else {
+                ClaimResult.StealFailed(drop.toDomain(), originalClaimer)
+            }
+        }
 
         when (val cooldown = cooldownService.tryConsume(userId, CooldownType.CLAIM)) {
             is CooldownResult.OnCooldown -> when (inventoryService.removeItems(userId, ItemType.FreeClaim, 1)) {
@@ -128,6 +148,7 @@ class DropServiceImpl(
         )
 
         val replica = cardReplicaRepository.save(replicaEntity)
+        droppedCard.claimedReplica = replica
         eventPublisher.publishEvent(CardClaimedEvent(userId))
 
         return ClaimResult.Claimed(drop.toDomain(), replica.toDomain())
@@ -150,6 +171,7 @@ class DropServiceImpl(
         id = DropId(id),
         cards = cards.map { it.toDomain() },
         createdAt = createdAt,
+        createdBy = createdByUserId?.let { UserId(it) },
     )
 
     private fun DroppedCardEntity.toDomain() = DroppedCard(
@@ -183,5 +205,6 @@ class DropServiceImpl(
         private const val DROP_SIZE = 3
         private const val SUPER_DROP_SIZE = 10
         private const val FOIL_CHANCE = 0.05
+        private const val STEAL_CHANCE = 0.75
     }
 }

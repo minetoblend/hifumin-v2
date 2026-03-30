@@ -1,0 +1,20 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0018-add-claimed-replica-id-to-dropped-cards
+      author: liquibase
+      changes:
+        - addColumn:
+            tableName: dropped_cards
+            columns:
+              - column:
+                  name: claimed_replica_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+        - addForeignKeyConstraint:
+            constraintName: fk_dropped_cards_claimed_replica
+            baseTableName: dropped_cards
+            baseColumnNames: claimed_replica_id
+            referencedTableName: card_replicas
+            referencedColumnNames: id
+            onDelete: SET NULL

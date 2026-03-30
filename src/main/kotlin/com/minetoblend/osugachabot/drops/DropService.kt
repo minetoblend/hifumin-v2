@@ -23,6 +23,9 @@ sealed class CreateDropResult {
 
 sealed class ClaimResult {
     data class Claimed(val drop: Drop, val replica: CardReplica) : ClaimResult()
+    data class StolenBack(val drop: Drop, val replica: CardReplica, val stolenFrom: UserId) : ClaimResult()
+    data class StealFailed(val drop: Drop, val claimedBy: UserId) : ClaimResult()
+    data object StealNotPossible : ClaimResult()
     data class AlreadyClaimed(val drop: Drop) : ClaimResult()
     data class OnCooldown(val remaining: Duration) : ClaimResult()
     data object DropNotFound : ClaimResult()
