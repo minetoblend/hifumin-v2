@@ -179,8 +179,8 @@ class BurnCommand(
                     "card:burn:confirm" -> {
                         when (cardReplicaService.burnCard(replica.id, interaction.user.id.toUserId())) {
                             Success -> {
-                                interaction.respondPublic {
-                                    content = "${interaction.user.mention} you have burned your card!"
+                                interaction.respondEphemeral {
+                                    content = "You have burned your card!"
                                 }
 
                                 status = Confirmed
