@@ -2,6 +2,7 @@ package com.minetoblend.osugachabot.discord.infrastructure
 
 import com.minetoblend.osugachabot.discord.DiscordProperties
 import dev.kord.core.Kord
+import dev.kord.core.gateway.MasterGateway
 import io.ktor.client.*
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.AttributeKey
@@ -43,6 +44,10 @@ class DiscordConfiguration {
             }
         }
     }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "discord", name = ["enabled"], havingValue = "true", matchIfMissing = true)
+    fun discordGateway(kord: Kord): MasterGateway = kord.gateway
 
     @PreDestroy
     fun destroy() = scope.cancel()
