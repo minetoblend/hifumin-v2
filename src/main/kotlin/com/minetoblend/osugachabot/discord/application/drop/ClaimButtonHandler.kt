@@ -60,7 +60,7 @@ class ClaimButtonHandler(private val dropService: DropService) : ButtonInteracti
                             content = "${interaction.user.mention} you fought <@${result.stolenFrom.value}> over the *${result.replica.card.username}* card and came out on top!"
                         }
                         interactionButtonAccessory(ButtonStyle.Danger, BurnButtonId(result.replica.id)) {
-                            label = "Burn"
+                            label = "Burn (${result.replica.burnValue} gold)"
                         }
                     }
                 }
