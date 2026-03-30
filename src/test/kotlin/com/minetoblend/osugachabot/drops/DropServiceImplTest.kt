@@ -5,12 +5,16 @@ import com.minetoblend.osugachabot.cards.persistence.CardEntity
 import com.minetoblend.osugachabot.cards.persistence.CardRepository
 import com.minetoblend.osugachabot.drops.persistence.DropRepository
 import com.minetoblend.osugachabot.users.UserId
+import com.minetoblend.osugachabot.cards.persistence.CardReplicaRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.jdbc.core.JdbcTemplate
 import java.sql.Timestamp
 import java.time.Instant
+import java.util.concurrent.CyclicBarrier
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -33,6 +37,9 @@ class DropServiceImplTest {
 
     @Autowired
     private lateinit var inventoryService: com.minetoblend.osugachabot.inventory.InventoryService
+
+    @Autowired
+    private lateinit var cardReplicaRepository: CardReplicaRepository
 
     @Autowired
     private lateinit var jdbcTemplate: JdbcTemplate
@@ -376,5 +383,31 @@ class DropServiceImplTest {
         dropService.claimCard(drop.id, 0, userId)
 
         assertEquals(1, inventoryService.getItem(userId, com.minetoblend.osugachabot.inventory.ItemType.FreeClaim).amount)
+    }
+
+    @Test
+    fun `concurrent claims on the same card result in only one replica`() {
+        val drop = createDrop()
+        val threadCount = 5
+        val barrier = CyclicBarrier(threadCount)
+        val executor = Executors.newFixedThreadPool(threadCount)
+
+        val replicaCountBefore = cardReplicaRepository.count()
+
+        val futures: List<Future<ClaimResult>> = (1..threadCount).map { i ->
+            executor.submit<ClaimResult> {
+                barrier.await()
+                dropService.claimCard(drop.id, 0, UserId(100L + i))
+            }
+        }
+
+        val results = futures.map { it.get() }
+        executor.shutdown()
+
+        val claimed = results.filterIsInstance<ClaimResult.Claimed>()
+        assertEquals(1, claimed.size, "Expected exactly one successful claim but got ${claimed.size}")
+
+        val replicasCreated = cardReplicaRepository.count() - replicaCountBefore
+        assertEquals(1, replicasCreated, "Expected exactly one replica to be created")
     }
 }

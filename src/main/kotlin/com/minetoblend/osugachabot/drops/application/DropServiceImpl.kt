@@ -19,7 +19,6 @@ import com.minetoblend.osugachabot.inventory.RemoveItemsResult
 import com.minetoblend.osugachabot.users.UserId
 import com.minetoblend.osugachabot.users.toUserId
 import org.springframework.context.ApplicationEventPublisher
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import kotlin.time.Clock
@@ -100,7 +99,7 @@ class DropServiceImpl(
 
     @Transactional
     override fun claimCard(dropId: DropId, cardIndex: Int, userId: UserId): ClaimResult {
-        val drop = dropRepository.findByIdOrNull(dropId.value) ?: return ClaimResult.DropNotFound
+        val drop = dropRepository.findByIdForUpdate(dropId.value) ?: return ClaimResult.DropNotFound
 
         if (Clock.System.now() > drop.createdAt.toKotlinInstant() + dropExpiryDuration())
             return ClaimResult.Expired
