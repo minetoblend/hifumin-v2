@@ -57,7 +57,7 @@ class LeaderboardCommand(
                     entries.isEmpty -> "No entries yet."
                     else -> entries.mapIndexed { i, entry ->
                         val rank = offset + i + 1
-                        "**#$rank** <@${entry.userId.value}> — ${entry.totalValue} gold (${entry.cardCount} cards)"
+                        "**#$rank** ${entry.totalValue} gold · ${entry.cardCount} cards · <@${entry.userId.value}>"
                     }.joinToString("\n")
                 }
 
