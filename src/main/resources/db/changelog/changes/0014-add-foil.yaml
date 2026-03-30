@@ -8,7 +8,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: foil
-                  type: BOOLEAN
+                  type: BIT(1)
                   defaultValueBoolean: false
                   constraints:
                     nullable: false
@@ -17,7 +17,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: foil
-                  type: BOOLEAN
+                  type: BIT(1)
                   defaultValueBoolean: false
                   constraints:
                     nullable: false
