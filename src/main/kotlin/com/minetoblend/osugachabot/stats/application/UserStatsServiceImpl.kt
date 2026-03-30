@@ -4,6 +4,7 @@ import com.minetoblend.osugachabot.cards.CardBurnedEvent
 import com.minetoblend.osugachabot.daily.DailyClaimedEvent
 import com.minetoblend.osugachabot.drops.CardClaimedEvent
 import com.minetoblend.osugachabot.drops.DropCreatedEvent
+import com.minetoblend.osugachabot.drops.SuperDropCreatedEvent
 import com.minetoblend.osugachabot.stats.UserAction
 import com.minetoblend.osugachabot.stats.UserStatsService
 import com.minetoblend.osugachabot.stats.persistence.UserActionStatEntity
@@ -16,7 +17,6 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.transaction.event.TransactionPhase
 import org.springframework.transaction.event.TransactionalEventListener
 
 @Service
@@ -53,6 +53,10 @@ class UserStatsServiceImpl(
     @TransactionalEventListener(phase = AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     fun onTradeAccepted(event: TradeAcceptedEvent) = increment(event.userId, TRADE_ACCEPTED)
+
+    @TransactionalEventListener(phase = AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    fun onSuperDropCreated(event: SuperDropCreatedEvent) = increment(event.userId, SUPER_DROP)
 
     private fun increment(userId: UserId, action: UserAction) {
         val id = UserActionStatId(userId.value, action.name)

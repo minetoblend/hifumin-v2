@@ -7,4 +7,5 @@ enum class UserAction(val label: String) {
     DAILY("Dailies"),
     TRADE_INITIATED("Trades Initiated"),
     TRADE_ACCEPTED("Trades Accepted"),
+    SUPER_DROP("Superdrops"),
 }

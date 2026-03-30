@@ -93,7 +93,9 @@ class DropServiceImpl(
             )
         }
 
-        return dropRepository.save(entity).toDomain()
+        val drop = dropRepository.save(entity).toDomain()
+        eventPublisher.publishEvent(SuperDropCreatedEvent(userId))
+        return drop
     }
 
     @Transactional
