@@ -53,6 +53,7 @@ dependencies {
     testImplementation("org.testcontainers:testcontainers-junit-jupiter")
     testImplementation("org.testcontainers:testcontainers-mysql")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation("com.github.romankh3:image-comparison:4.4.0")
     implementation("dev.kord:kord-core:0.18.1")
     implementation("io.opentelemetry.instrumentation:opentelemetry-ktor-3.0:2.16.0-alpha")
     implementation("io.opentelemetry.instrumentation:opentelemetry-jdbc:2.16.0-alpha")

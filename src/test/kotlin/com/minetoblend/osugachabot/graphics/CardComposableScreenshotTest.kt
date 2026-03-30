@@ -10,11 +10,12 @@ import com.minetoblend.osugachabot.cards.CardRarity
 import com.minetoblend.osugachabot.generated.resources.Res
 import com.minetoblend.osugachabot.generated.resources.default_avatar
 import org.jetbrains.compose.resources.imageResource
-import org.jetbrains.skia.Bitmap
+import com.github.romankh3.image.comparison.ImageComparison
+import com.github.romankh3.image.comparison.model.ImageComparisonState
 import org.jetbrains.skia.EncodedImageFormat
-import org.jetbrains.skia.Image
+import java.io.ByteArrayInputStream
 import java.io.File
-import kotlin.math.abs
+import javax.imageio.ImageIO
 import kotlin.test.Test
 
 class CardComposableScreenshotTest {
@@ -103,56 +104,24 @@ class CardComposableScreenshotTest {
             return
         }
 
-        val expectedBitmap = Bitmap.makeFromImage(Image.makeFromEncoded(goldenFile.readBytes()))
-        val actualBitmap = Bitmap.makeFromImage(Image.makeFromEncoded(actual))
+        val expectedImage = ImageIO.read(goldenFile)
+        val actualImage = ImageIO.read(ByteArrayInputStream(actual))
 
-        if (expectedBitmap.width != actualBitmap.width || expectedBitmap.height != actualBitmap.height) {
-            actualDir.mkdirs()
-            File(actualDir, "$name.png").writeBytes(actual)
-            throw AssertionError(
-                "Screenshot size mismatch for '$name': " +
-                "expected ${expectedBitmap.width}x${expectedBitmap.height}, " +
-                "got ${actualBitmap.width}x${actualBitmap.height}"
-            )
-        }
+        val result = ImageComparison(expectedImage, actualImage).apply {
+            setPixelToleranceLevel(0.04)
+            setAllowingPercentOfDifferentPixels(1.0)
+        }.compareImages()
 
-        val similarity = bitmapSimilarity(expectedBitmap, actualBitmap)
-
-        if (similarity.maxChannelDiff > 10 || similarity.diffRatio > 0.01) {
+        if (result.imageComparisonState != ImageComparisonState.MATCH) {
             actualDir.mkdirs()
             val actualFile = File(actualDir, "$name.png")
             actualFile.writeBytes(actual)
             throw AssertionError(
-                "Screenshot mismatch for '$name' " +
-                "(maxDiff=${similarity.maxChannelDiff}, diffPixels=${similarity.diffPixels}/${similarity.totalPixels} = ${"%.2f".format(similarity.diffRatio * 100)}%)\n" +
+                "Screenshot mismatch for '$name'\n" +
                 "  actual:   ${actualFile.path}\n" +
                 "  expected: ${goldenFile.path}\n" +
                 "To update the golden, delete the expected file and re-run."
             )
         }
-    }
-
-    private data class BitmapSimilarity(val maxChannelDiff: Int, val diffPixels: Int, val totalPixels: Int) {
-        val diffRatio: Double get() = diffPixels.toDouble() / totalPixels
-    }
-
-    private fun bitmapSimilarity(expected: Bitmap, actual: Bitmap): BitmapSimilarity {
-        var maxDiff = 0
-        var diffPixels = 0
-        for (y in 0 until expected.height) {
-            for (x in 0 until expected.width) {
-                val exp = expected.getColor(x, y)
-                val act = actual.getColor(x, y)
-                val diff = maxOf(
-                    abs((exp shr 16 and 0xFF) - (act shr 16 and 0xFF)),
-                    abs((exp shr 8 and 0xFF) - (act shr 8 and 0xFF)),
-                    abs((exp and 0xFF) - (act and 0xFF)),
-                    abs((exp ushr 24) - (act ushr 24)),
-                )
-                if (diff > 0) diffPixels++
-                if (diff > maxDiff) maxDiff = diff
-            }
-        }
-        return BitmapSimilarity(maxDiff, diffPixels, expected.width * expected.height)
     }
 }
