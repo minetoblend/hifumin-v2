@@ -1,0 +1,26 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0019-create-daily-streaks-table
+      author: liquibase
+      changes:
+        - createTable:
+            tableName: daily_streaks
+            columns:
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_daily_streaks
+                    nullable: false
+              - column:
+                  name: current_streak
+                  type: INT
+                  defaultValueNumeric: 1
+                  constraints:
+                    nullable: false
+              - column:
+                  name: last_claimed_at
+                  type: DATETIME(6)
+                  constraints:
+                    nullable: false
