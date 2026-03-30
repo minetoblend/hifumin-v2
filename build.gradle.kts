@@ -60,6 +60,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
     implementation(compose.desktop.currentOs)
     implementation(compose.material3)
+    implementation(compose.components.resources)
 }
 
 kotlin {
@@ -71,6 +72,11 @@ kotlin {
             "-Xcontext-parameters",
         )
     }
+}
+
+compose.resources {
+    publicResClass = true
+    generateResClass = always
 }
 
 allOpen {
