@@ -35,6 +35,8 @@ databaseChangeLog:
       file: db/changelog/changes/0018-add-claimed-replica-id-to-dropped-cards.yaml
   - include:
       file: db/changelog/changes/0019-daily-streaks.yaml
+  - include:
+      file: db/changelog/changes/0020-add-burn-value-version.yaml
   - changeSet:
       id: 0017-quartz-schema
       author: liquibase

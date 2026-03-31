@@ -33,6 +33,8 @@ class CardReplicaEntity(
     var condition: CardCondition,
     @Column(name = "burn_value")
     var burnValue: Int? = null,
+    @Column(name = "burn_value_version")
+    var burnValueVersion: Int? = null,
     @Column(nullable = false)
     var foil: Boolean = false,
 ) {

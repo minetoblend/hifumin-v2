@@ -16,6 +16,9 @@ interface CardReplicaRepository : JpaRepository<CardReplicaEntity, Long> {
 
     fun findByBurnValueIsNull(): List<CardReplicaEntity>
 
+    @Query("SELECT r FROM CardReplicaEntity r WHERE r.burnValueVersion IS NULL OR r.burnValueVersion != :version")
+    fun findWithStaleBurnValue(@Param("version") version: Int, pageable: Pageable): List<CardReplicaEntity>
+
     @Query("SELECT COALESCE(SUM(r.burnValue), 0) FROM CardReplicaEntity r WHERE r.userId = :userId")
     fun sumBurnValueByUserId(@Param("userId") userId: Long): Long
 

@@ -5,6 +5,7 @@ import com.minetoblend.osugachabot.cards.persistence.CardReplicaRepository
 import org.slf4j.LoggerFactory
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Component
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
@@ -16,17 +17,27 @@ class BurnValuePopulator(
     private val logger = LoggerFactory.getLogger(BurnValuePopulator::class.java)
 
     override fun run(args: ApplicationArguments) {
-        val replicas = cardReplicaRepository.findByBurnValueIsNull()
+        val pageable = PageRequest.of(0, BATCH_SIZE)
+        var total = 0
 
-        if (replicas.isEmpty()) return
+        while (true) {
+            val batch = cardReplicaRepository.findWithStaleBurnValue(CURRENT_BURN_VALUE_VERSION, pageable)
+            if (batch.isEmpty()) break
 
-        logger.info("Populating burn_value for {} card replicas", replicas.size)
+            for (replica in batch) {
+                replica.burnValue = computeBurnValue(replica.card.followerCount, replica.condition, replica.foil)
+                replica.burnValueVersion = CURRENT_BURN_VALUE_VERSION
+            }
 
-        for (replica in replicas) {
-            replica.burnValue = computeBurnValue(replica.card.followerCount, replica.condition, replica.foil)
+            cardReplicaRepository.saveAll(batch)
+            total += batch.size
+            logger.info("Recalculated burn_value for {}/{} card replicas (version {})", batch.size, total, CURRENT_BURN_VALUE_VERSION)
         }
+    }
 
-        cardReplicaRepository.saveAll(replicas)
+    companion object {
+        const val CURRENT_BURN_VALUE_VERSION = 1
+        private const val BATCH_SIZE = 500
     }
 }
 

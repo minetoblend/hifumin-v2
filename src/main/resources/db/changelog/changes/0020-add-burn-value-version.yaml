@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0020-add-burn-value-version
+      author: liquibase
+      changes:
+        - addColumn:
+            tableName: card_replicas
+            columns:
+              - column:
+                  name: burn_value_version
+                  type: INT
+                  constraints:
+                    nullable: true
