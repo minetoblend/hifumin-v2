@@ -4,13 +4,14 @@ import com.minetoblend.osugachabot.discord.ButtonInteractionHandler
 import com.minetoblend.osugachabot.discord.SlashCommand
 import com.minetoblend.osugachabot.discord.application.SlashCommandDispatcher
 import dev.kord.core.Kord
+import dev.kord.core.entity.channel.GuildChannel
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.core.on
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.DisposableBean
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -45,7 +46,10 @@ class DiscordBot(
 
             kord.on<ChatInputCommandInteractionCreateEvent> {
                 val cmd = commandIndex[interaction.invokedCommandName] ?: return@on
-                dispatcher.dispatch(cmd.name) {
+
+                val guildName = (interaction.channel as? GuildChannel)?.guild?.asGuild()?.name
+
+                dispatcher.dispatch(cmd.name, guildName) {
                     cmd.run {
                         handle()
                     }
