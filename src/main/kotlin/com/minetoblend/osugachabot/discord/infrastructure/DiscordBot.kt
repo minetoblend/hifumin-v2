@@ -5,6 +5,7 @@ import com.minetoblend.osugachabot.discord.SlashCommand
 import com.minetoblend.osugachabot.discord.application.SlashCommandDispatcher
 import dev.kord.core.Kord
 import dev.kord.core.entity.channel.GuildChannel
+import dev.kord.core.entity.interaction.GuildChatInputCommandInteraction
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.core.on
@@ -47,7 +48,10 @@ class DiscordBot(
             kord.on<ChatInputCommandInteractionCreateEvent> {
                 val cmd = commandIndex[interaction.invokedCommandName] ?: return@on
 
-                val guildName = (interaction.channel as? GuildChannel)?.guild?.asGuild()?.name
+                val guildName = if (interaction is GuildChatInputCommandInteraction)
+                    (interaction as GuildChatInputCommandInteraction).getGuildOrNull()?.name
+                else
+                    null
 
                 dispatcher.dispatch(cmd.name, guildName) {
                     cmd.run {
