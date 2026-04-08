@@ -118,6 +118,12 @@ class TradeCommand(
 
             RequestedCardNotOwned ->
                 interaction.respondEphemeral { content = "That player doesn't own the card you're asking for." }
+
+            is OfferedCardLocked ->
+                interaction.respondEphemeral { content = result.reason }
+
+            is RequestedCardLocked ->
+                interaction.respondEphemeral { content = result.reason }
         }
     }
 }

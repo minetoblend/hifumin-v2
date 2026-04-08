@@ -30,6 +30,8 @@ sealed interface CreateTradeResult {
     data object RequestedCardNotFound : CreateTradeResult
     data object RequestedCardNotOwned : CreateTradeResult
     data object CannotTradeWithSelf : CreateTradeResult
+    data class OfferedCardLocked(val reason: String) : CreateTradeResult
+    data class RequestedCardLocked(val reason: String) : CreateTradeResult
 }
 
 sealed interface AcceptTradeResult {
@@ -42,6 +44,7 @@ sealed interface AcceptTradeResult {
     data object NotTargetUser : AcceptTradeResult
     data object TradeNoLongerValid : AcceptTradeResult
     data object CardNoLongerAvailable : AcceptTradeResult
+    data class CardLocked(val reason: String) : AcceptTradeResult
 }
 
 sealed interface DeclineTradeResult {

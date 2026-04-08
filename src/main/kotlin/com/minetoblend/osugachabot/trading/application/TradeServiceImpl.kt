@@ -1,7 +1,9 @@
 package com.minetoblend.osugachabot.trading.application
 
+import com.minetoblend.osugachabot.cards.CardMutationGuard
 import com.minetoblend.osugachabot.cards.CardReplica
 import com.minetoblend.osugachabot.cards.CardReplicaId
+import com.minetoblend.osugachabot.cards.MutationCheck
 import com.minetoblend.osugachabot.cards.persistence.CardReplicaEntity
 import com.minetoblend.osugachabot.cards.persistence.CardReplicaRepository
 import com.minetoblend.osugachabot.trading.*
@@ -24,6 +26,7 @@ class TradeServiceImpl(
     private val tradeRepository: TradeRepository,
     private val cardReplicaRepository: CardReplicaRepository,
     private val eventPublisher: ApplicationEventPublisher,
+    private val cardMutationGuard: CardMutationGuard,
 ) : TradeService {
 
     @Transactional
@@ -41,11 +44,21 @@ class TradeServiceImpl(
         if (offeredCard.userId != initiatorUserId.value)
             return OfferedCardNotOwned
 
+        when (val check = cardMutationGuard.canMutate(offeredCardId)) {
+            is MutationCheck.Blocked -> return CreateTradeResult.OfferedCardLocked(check.reason)
+            MutationCheck.Allowed -> {}
+        }
+
         val requestedCard = cardReplicaRepository.findByIdOrNull(requestedCardId.value)
             ?: return RequestedCardNotFound
 
         if (requestedCard.userId != targetUserId.value)
             return RequestedCardNotOwned
+
+        when (val check = cardMutationGuard.canMutate(requestedCardId)) {
+            is MutationCheck.Blocked -> return CreateTradeResult.RequestedCardLocked(check.reason)
+            MutationCheck.Allowed -> {}
+        }
 
         val entity = tradeRepository.save(
             TradeEntity(
@@ -84,6 +97,11 @@ class TradeServiceImpl(
             tradeRepository.save(trade)
             return CardNoLongerAvailable
         }
+
+        val offeredCheck = cardMutationGuard.canMutate(CardReplicaId(trade.offeredCardId))
+        val requestedCheck = cardMutationGuard.canMutate(CardReplicaId(trade.requestedCardId))
+        if (offeredCheck is MutationCheck.Blocked) return AcceptTradeResult.CardLocked(offeredCheck.reason)
+        if (requestedCheck is MutationCheck.Blocked) return AcceptTradeResult.CardLocked(requestedCheck.reason)
 
         // Swap ownership
         offeredCard.userId = trade.targetUserId

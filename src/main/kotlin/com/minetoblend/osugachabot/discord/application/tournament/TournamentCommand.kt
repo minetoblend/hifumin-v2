@@ -99,7 +99,7 @@ class TournamentCommand(
                 title = tournament.name
                 description = buildString {
                     appendLine("**Entries:** ${tournament.entries.size}")
-                    appendLine("**Prize:** ${TournamentServiceImpl.PRIZE_GOLD} gold + SSR+ card (Mint)")
+                    appendLine("**Prize:** :money_bag: ${TournamentServiceImpl.PRIZE_GOLD} gold + SSR+ card (Mint)")
                     appendLine("**Ends:** ${remaining.toDiscordRelativeTimestamp()}")
                 }
 

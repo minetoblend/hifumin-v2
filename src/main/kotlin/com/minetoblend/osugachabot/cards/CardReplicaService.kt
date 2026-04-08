@@ -28,6 +28,7 @@ sealed interface BurnCardResult {
     data object Success : BurnCardResult
     data object NotFound : BurnCardResult
     data object NotOwned : BurnCardResult
+    data class Locked(val reason: String) : BurnCardResult
 }
 
 sealed interface UpgradeCardResult {
@@ -37,4 +38,5 @@ sealed interface UpgradeCardResult {
     data object NotFound : UpgradeCardResult
     data object NotOwned : UpgradeCardResult
     data object InsufficientGold : UpgradeCardResult
+    data class Locked(val reason: String) : UpgradeCardResult
 }

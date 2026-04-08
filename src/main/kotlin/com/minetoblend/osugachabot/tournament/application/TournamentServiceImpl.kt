@@ -175,10 +175,10 @@ class TournamentServiceImpl(
 
         fun computeTournamentWeight(followerCount: Int, condition: CardCondition, foil: Boolean): Double {
             val conditionMultiplier = when (condition) {
-                CardCondition.Mint -> 1.0
-                CardCondition.Good -> 0.75
-                CardCondition.Poor -> 0.5
-                CardCondition.Damaged -> 0.25
+                Mint -> 1.0
+                Good -> 0.75
+                Poor -> 0.5
+                Damaged -> 0.25
             }
             val foilMultiplier = if (foil) 1.5 else 1.0
             return followerCount * conditionMultiplier * foilMultiplier

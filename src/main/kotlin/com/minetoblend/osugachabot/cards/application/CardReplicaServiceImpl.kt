@@ -24,6 +24,7 @@ class CardReplicaServiceImpl(
     private val inventoryService: InventoryService,
     private val eventPublisher: ApplicationEventPublisher,
     private val random: Random,
+    private val cardMutationGuard: CardMutationGuard,
 ) : CardReplicaService {
     override fun findById(id: CardReplicaId): CardReplica? =
         cardReplicaRepository.findByIdOrNull(id.value)?.toDomain()
@@ -59,6 +60,11 @@ class CardReplicaServiceImpl(
         if (userId != card.userId.toUserId())
             return BurnCardResult.NotOwned
 
+        when (val check = cardMutationGuard.canMutate(id)) {
+            is MutationCheck.Blocked -> return BurnCardResult.Locked(check.reason)
+            MutationCheck.Allowed -> {}
+        }
+
         val replica = card.toDomain()
         cardReplicaRepository.delete(card)
         inventoryService.addItems(userId, ItemType.Gold, replica.burnValue.toLong())
@@ -74,6 +80,11 @@ class CardReplicaServiceImpl(
 
         if (userId != entity.userId.toUserId())
             return UpgradeCardResult.NotOwned
+
+        when (val check = cardMutationGuard.canMutate(id)) {
+            is MutationCheck.Blocked -> return UpgradeCardResult.Locked(check.reason)
+            MutationCheck.Allowed -> {}
+        }
 
         if (entity.condition == CardCondition.Mint)
             return UpgradeCardResult.AlreadyMint

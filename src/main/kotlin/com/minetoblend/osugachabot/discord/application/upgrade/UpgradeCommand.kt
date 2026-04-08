@@ -232,6 +232,9 @@ class UpgradeCommand(
 
                             UpgradeCardResult.NotOwned ->
                                 interaction.respondEphemeral { content = "This is not your card!" }
+
+                            is UpgradeCardResult.Locked ->
+                                interaction.respondEphemeral { content = result.reason }
                         }
                     }
                 }

@@ -66,6 +66,9 @@ class TradeButtonHandler(
                     attachments = mutableListOf()
                 }
             }
+
+            is CardLocked ->
+                interaction.respondEphemeral { content = result.reason }
         }
     }
 

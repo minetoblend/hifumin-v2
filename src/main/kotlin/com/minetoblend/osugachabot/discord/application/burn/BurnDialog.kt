@@ -109,7 +109,7 @@ class BurnDialog(
                     interaction.updatePublicMessage { render() }
                 }
                 "card:burn:confirm" -> {
-                    when (cardReplicaService.burnCard(replica.id, interaction.user.id.toUserId())) {
+                    when (val result = cardReplicaService.burnCard(replica.id, interaction.user.id.toUserId())) {
                         Success -> {
                             interaction.respondEphemeral { content = "You have burned your card!" }
                             status = Confirmed
@@ -117,6 +117,7 @@ class BurnDialog(
                         }
                         NotFound -> interaction.respondEphemeral { content = "Card was not found!" }
                         NotOwned -> interaction.respondEphemeral { content = "This is not your card!" }
+                        is Locked -> interaction.respondEphemeral { content = result.reason }
                     }
                 }
             }
