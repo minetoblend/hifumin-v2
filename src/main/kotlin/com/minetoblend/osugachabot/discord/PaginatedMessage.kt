@@ -15,6 +15,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import kotlin.time.Duration
 
 abstract class PaginatedMessage(
@@ -22,6 +23,7 @@ abstract class PaginatedMessage(
     protected val interaction: ChatInputCommandInteraction,
 ) {
     open val pageSize: Int = 10
+    open val sort: Sort = Sort.unsorted()
 
     abstract suspend fun getItemCount(): Int
 
@@ -95,7 +97,7 @@ abstract class PaginatedMessage(
     }
 
     private suspend fun MessageBuilder.render() {
-        renderPage(PageRequest.of(currentPage, pageSize))
+        renderPage(PageRequest.of(currentPage, pageSize, sort))
 
         actionRow {
             interactionButton(ButtonStyle.Primary, "page:start") {
