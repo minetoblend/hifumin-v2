@@ -57,7 +57,7 @@ class TournamentPreviewBracketTest {
 
         val firstRound = bracket.rounds.first()
         val allEntries = firstRound.matches.flatMap { listOfNotNull(it.entry1, it.entry2) }
-        assertTrue(allEntries.all { it.cardReplica.card.username == "???" })
+        assertTrue(allEntries.all { it.cardReplica == null })
     }
 
     @Test
@@ -71,7 +71,7 @@ class TournamentPreviewBracketTest {
         val viewerEntry = allEntries.find { it.userId == viewerUserId.value }
 
         assertNotNull(viewerEntry)
-        assertEquals("MyPlayer", viewerEntry.cardReplica.card.username)
+        assertEquals("MyPlayer", viewerEntry.cardReplica?.card?.username)
     }
 
     @Test
@@ -85,7 +85,7 @@ class TournamentPreviewBracketTest {
         val nonViewerEntries = allEntries.filter { it.userId != viewerUserId.value }
 
         assertTrue(nonViewerEntries.isNotEmpty())
-        assertTrue(nonViewerEntries.all { it.cardReplica.card.username == "???" })
+        assertTrue(nonViewerEntries.all { it.cardReplica == null })
     }
 
     @Test
@@ -109,7 +109,7 @@ class TournamentPreviewBracketTest {
 
         assertEquals(2, bracket.rounds.size)
         val round2Entries = bracket.rounds[1].matches.flatMap { listOfNotNull(it.entry1, it.entry2) }
-        assertTrue(round2Entries.all { it.cardReplica.card.username == "???" })
+        assertTrue(round2Entries.all { it.cardReplica == null })
     }
 
     @Test

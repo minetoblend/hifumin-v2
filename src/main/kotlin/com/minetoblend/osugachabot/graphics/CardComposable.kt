@@ -187,6 +187,7 @@ private fun CardHeader(card: Card, colors: CardColors) {
 
 @Composable
 private fun CardImage(avatar: ImageBitmap?) {
+    val image = avatar ?: imageResource(Res.drawable.default_avatar)
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -194,14 +195,12 @@ private fun CardImage(avatar: ImageBitmap?) {
             .background(Color.Black.copy(alpha = 0.3f))
             .border(0.5.dp, Color.White.copy(alpha = 0.1f))
     ) {
-        if (avatar != null) {
-            Image(
-                bitmap = avatar,
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop,
-            )
-        }
+        Image(
+            bitmap = image,
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop,
+        )
 
         Box(
             modifier = Modifier

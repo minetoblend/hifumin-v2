@@ -47,6 +47,12 @@ class BracketComposableScreenshotTest {
         weight = weight,
     )
 
+    private fun anonymousEntry(userId: Long, weight: Double) = TournamentMatchEntry(
+        userId = userId,
+        cardReplica = null,
+        weight = weight,
+    )
+
     private fun render(bracket: TournamentBracket, name: String): ByteArray {
         val size = computeBracketSize(bracket)
         val image = renderComposeScene(width = size.width, height = size.height) {
@@ -255,6 +261,41 @@ class BracketComposableScreenshotTest {
             winnerId = null,
         )
         assertMatchesSnapshot("bracket-0-players", render(bracket, "Empty Tournament"))
+    }
+
+    @Test
+    fun `4-player preview bracket with 1 revealed entry matches snapshot`() {
+        val viewerEntry = entry(1, "MyPlayer", 800.0, CardRarity.SSR)
+        val bracket = TournamentBracket(
+            rounds = listOf(
+                TournamentRound(
+                    listOf(
+                        TournamentMatch(
+                            entry1 = viewerEntry,
+                            entry2 = anonymousEntry(2, 600.0),
+                            winnerId = Long.MIN_VALUE,
+                        ),
+                        TournamentMatch(
+                            entry1 = anonymousEntry(3, 400.0),
+                            entry2 = anonymousEntry(4, 200.0),
+                            winnerId = Long.MIN_VALUE,
+                        ),
+                    ),
+                ),
+                TournamentRound(
+                    listOf(
+                        TournamentMatch(
+                            entry1 = anonymousEntry(-1, 0.0),
+                            entry2 = anonymousEntry(-2, 0.0),
+                            winnerId = Long.MIN_VALUE,
+                        ),
+                    ),
+                ),
+            ),
+            winnerId = null,
+            winner = null,
+        )
+        assertMatchesSnapshot("bracket-4-players-preview", render(bracket, "Preview Cup"))
     }
 
     private fun assertMatchesSnapshot(name: String, actual: ByteArray) {

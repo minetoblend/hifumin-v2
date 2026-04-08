@@ -26,7 +26,7 @@ data class TournamentMatch(
 
 data class TournamentMatchEntry(
     val userId: Long,
-    val cardReplica: SnapshotCardReplica,
+    val cardReplica: SnapshotCardReplica?,
     val weight: Double,
 )
 

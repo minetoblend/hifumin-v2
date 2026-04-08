@@ -80,11 +80,10 @@ class CardRenderer(
     }
 
     suspend fun renderBracket(bracket: TournamentBracket, tournamentName: String): ByteArray {
-        // Collect all unique osu user IDs from the bracket entries
         val userIds = bracket.rounds
             .flatMap { it.matches }
             .flatMap { listOfNotNull(it.entry1, it.entry2) }
-            .map { it.cardReplica.card.userId }
+            .mapNotNull { it.cardReplica?.card?.userId }
             .distinct()
 
         val avatars: Map<Long, ImageBitmap?> = coroutineScope {

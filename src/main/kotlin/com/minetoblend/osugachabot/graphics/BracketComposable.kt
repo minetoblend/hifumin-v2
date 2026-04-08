@@ -291,7 +291,7 @@ fun BracketComposable(
                         MiniCardComposable(
                             entry = winnerEntry,
                             isWinner = true,
-                            avatar = avatars[winnerEntry.cardReplica.card.userId],
+                            avatar = avatars[winnerEntry.cardReplica?.card?.userId],
                         )
                     }
                 }
@@ -343,8 +343,7 @@ private fun MatchEntryRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (entry != null) {
-            val card = entry.cardReplica.card
-            val avatar = avatars[card.userId] ?: imageResource(Res.drawable.default_avatar)
+            val avatar = entry.cardReplica?.let { avatars[it.card.userId] } ?: imageResource(Res.drawable.default_avatar)
 
             // Avatar
             Image(
@@ -361,7 +360,7 @@ private fun MatchEntryRow(
 
             // Player name
             Text(
-                text = card.username,
+                text = entry.cardReplica?.card?.username ?: "???",
                 style = TextStyle(
                     color = if (isWinner) TEXT_WINNER else TEXT_PRIMARY,
                     fontSize = 12.sp,
@@ -415,8 +414,9 @@ private fun MiniCardComposable(
     isWinner: Boolean,
     avatar: ImageBitmap?,
 ) {
-    val card = entry.cardReplica.card.toDomain()
-    val foil = entry.cardReplica.foil
+    val replica = entry.cardReplica ?: return
+    val card = replica.card.toDomain()
+    val foil = replica.foil
     val scale = MINI_CARD_WIDTH.toFloat() / CardRenderer.CARD_WIDTH.toFloat()
 
     Box(

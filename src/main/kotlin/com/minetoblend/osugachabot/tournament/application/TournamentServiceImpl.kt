@@ -275,30 +275,14 @@ class TournamentServiceImpl(
             viewerUserId: UserId,
             viewerSnapshot: SnapshotCardReplica?,
         ): TournamentMatchEntry {
-            val snapshot = if (userId == viewerUserId && viewerSnapshot != null) viewerSnapshot else anonymousSnapshot()
+            val snapshot = if (userId == viewerUserId) viewerSnapshot else null
             return TournamentMatchEntry(userId = userId.value, cardReplica = snapshot, weight = weight)
         }
 
         private fun anonymousMatchEntry(id: Long) = TournamentMatchEntry(
             userId = id,
-            cardReplica = anonymousSnapshot(id),
+            cardReplica = null,
             weight = 0.0,
-        )
-
-        private fun anonymousSnapshot(id: Long = 0L) = SnapshotCardReplica(
-            id = id,
-            card = SnapshotCard(
-                id = id,
-                userId = 0L,
-                username = "???",
-                countryCode = "XX",
-                title = null,
-                followerCount = 0,
-                globalRank = null,
-                rarity = CardRarity.N,
-            ),
-            condition = CardCondition.Mint,
-            foil = false,
         )
 
         fun computeTournamentWeight(followerCount: Int, condition: CardCondition, foil: Boolean): Double {
