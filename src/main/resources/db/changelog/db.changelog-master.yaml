@@ -37,6 +37,8 @@ databaseChangeLog:
       file: db/changelog/changes/0019-daily-streaks.yaml
   - include:
       file: db/changelog/changes/0020-add-burn-value-version.yaml
+  - include:
+      file: db/changelog/changes/0021-tournaments.yaml
   - changeSet:
       id: 0017-quartz-schema
       author: liquibase

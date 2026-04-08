@@ -1,0 +1,170 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0021-create-tournaments
+      author: liquibase
+      changes:
+        - createTable:
+            tableName: tournaments
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: resolved_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: true
+        - createIndex:
+            tableName: tournaments
+            indexName: idx_tournament_status
+            columns:
+              - column:
+                  name: status
+
+  - changeSet:
+      id: 0021-create-tournament-entries
+      author: liquibase
+      changes:
+        - createTable:
+            tableName: tournament_entries
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: tournament_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: card_replica_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: channel_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: guild_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+              - column:
+                  name: weight
+                  type: DOUBLE
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            constraintName: fk_tournament_entry_tournament
+            baseTableName: tournament_entries
+            baseColumnNames: tournament_id
+            referencedTableName: tournaments
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            constraintName: fk_tournament_entry_card_replica
+            baseTableName: tournament_entries
+            baseColumnNames: card_replica_id
+            referencedTableName: card_replicas
+            referencedColumnNames: id
+        - createIndex:
+            tableName: tournament_entries
+            indexName: idx_tournament_entry_user
+            unique: true
+            columns:
+              - column:
+                  name: tournament_id
+              - column:
+                  name: user_id
+
+  - changeSet:
+      id: 0021-create-tournament-placements
+      author: liquibase
+      changes:
+        - createTable:
+            tableName: tournament_placements
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: tournament_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: place
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: prize_gold
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: prize_card_replica_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+        - addForeignKeyConstraint:
+            constraintName: fk_tournament_placement_tournament
+            baseTableName: tournament_placements
+            baseColumnNames: tournament_id
+            referencedTableName: tournaments
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            constraintName: fk_tournament_placement_card_replica
+            baseTableName: tournament_placements
+            baseColumnNames: prize_card_replica_id
+            referencedTableName: card_replicas
+            referencedColumnNames: id
+        - createIndex:
+            tableName: tournament_placements
+            indexName: idx_tournament_placement_unique
+            unique: true
+            columns:
+              - column:
+                  name: tournament_id
+              - column:
+                  name: place

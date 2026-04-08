@@ -75,6 +75,10 @@ class RecordingDiscordMessagingService : DiscordMessagingService {
         recipients.add(userId)
     }
 
+    override suspend fun sendChannelMessage(channelId: Long, message: String) {
+        // no-op for tests
+    }
+
     fun wasSentTo(userId: UserId) = recipients.contains(userId)
 
     fun clear() = recipients.clear()
