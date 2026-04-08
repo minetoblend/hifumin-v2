@@ -2,6 +2,7 @@ package com.minetoblend.osugachabot.leaderboard.application
 
 import com.minetoblend.osugachabot.cards.CardBurnedEvent
 import com.minetoblend.osugachabot.cards.CardCondition
+import com.minetoblend.osugachabot.cards.FoilLeaderboardEntry
 import com.minetoblend.osugachabot.cards.MintLeaderboardEntry
 import com.minetoblend.osugachabot.cards.persistence.CardReplicaRepository
 import com.minetoblend.osugachabot.drops.CardClaimedEvent
@@ -36,6 +37,10 @@ class CollectionValueServiceImpl(
     override fun getMintLeaderboard(pageable: Pageable): Page<MintLeaderboardEntry> =
         cardReplicaRepository.countByConditionGroupByUser(CardCondition.Mint, pageable)
             .map { MintLeaderboardEntry(it.getUserId().toUserId(), it.getCount()) }
+
+    override fun getFoilLeaderboard(pageable: Pageable): Page<FoilLeaderboardEntry> =
+        cardReplicaRepository.countFoilGroupByUser(pageable)
+            .map { FoilLeaderboardEntry(it.getUserId().toUserId(), it.getCount()) }
 
     override fun getCollectionValue(userId: UserId): CollectionValueEntry =
         collectionValueRepository.findByIdOrNull(userId.value)?.toDomain()

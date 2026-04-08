@@ -30,4 +30,10 @@ interface CardReplicaRepository : JpaRepository<CardReplicaEntity, Long> {
         countQuery = "SELECT COUNT(DISTINCT r.userId) FROM CardReplicaEntity r WHERE r.condition = :condition",
     )
     fun countByConditionGroupByUser(@Param("condition") condition: CardCondition, pageable: Pageable): Page<ConditionCountProjection>
+
+    @Query(
+        value = "SELECT r.userId as userId, COUNT(r) as count FROM CardReplicaEntity r WHERE r.foil = true GROUP BY r.userId ORDER BY COUNT(r) DESC",
+        countQuery = "SELECT COUNT(DISTINCT r.userId) FROM CardReplicaEntity r WHERE r.foil = true",
+    )
+    fun countFoilGroupByUser(pageable: Pageable): Page<ConditionCountProjection>
 }
