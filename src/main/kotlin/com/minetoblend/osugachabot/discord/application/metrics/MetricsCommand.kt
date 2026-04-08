@@ -39,7 +39,7 @@ class MetricsCommand(
                 val count = timer.count()
                 val max = formatMs(timer.max(TimeUnit.MILLISECONDS))
                 val avg = formatMs(timer.mean(TimeUnit.MILLISECONDS))
-                "**/$command** — ${count}x | avg: ${avg} | max: ${max}"
+                "**/$command** — ${count}x | avg: $avg | max: $max"
             }
     }
 
