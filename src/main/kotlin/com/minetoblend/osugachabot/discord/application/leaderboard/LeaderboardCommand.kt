@@ -35,6 +35,7 @@ class LeaderboardCommand(
         subCommand("gold", "Top users by gold in inventory") {}
         subCommand("claims", "Top users by cards claimed") {}
         subCommand("drops", "Top users by drops created") {}
+        subCommand("burns", "Top users by cards burned") {}
     }
 
     override suspend fun ChatInputCommandInteractionCreateEvent.handle() {
@@ -51,6 +52,9 @@ class LeaderboardCommand(
                 }
                 "drops" -> scope.launch {
                     DropsLeaderboardMessage(interaction).run(1.minutes)
+                }
+                "burns" -> scope.launch {
+                    BurnsLeaderboardMessage(interaction).run(1.minutes)
                 }
             }
             else -> {}
@@ -101,6 +105,32 @@ class LeaderboardCommand(
                     else -> entries.mapIndexed { i, entry ->
                         val rank = offset + i + 1
                         "**#$rank** ${entry.amount} gold · <@${entry.userId.value}>"
+                    }.joinToString("\n")
+                }
+
+                pageFooter()
+            }
+        }
+    }
+
+    private inner class BurnsLeaderboardMessage(interaction: ChatInputCommandInteraction) :
+        PaginatedMessage(scope, interaction) {
+
+        override suspend fun getItemCount(): Int =
+            userStatsService.getLeaderboard(UserAction.BURN, PageRequest.of(0, 1)).totalElements.toInt()
+
+        override suspend fun MessageBuilder.renderPage(page: PageRequest) {
+            val entries = userStatsService.getLeaderboard(UserAction.BURN, page)
+            val offset = page.pageNumber * page.pageSize
+
+            embed {
+                title = "Most Cards Burned"
+
+                description = when {
+                    entries.isEmpty -> "No entries yet."
+                    else -> entries.mapIndexed { i, entry ->
+                        val rank = offset + i + 1
+                        "**#$rank** ${entry.count} cards burned · <@${entry.userId.value}>"
                     }.joinToString("\n")
                 }
 
