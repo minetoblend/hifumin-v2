@@ -19,11 +19,13 @@ import dev.kord.rest.builder.message.embed
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.core.annotation.Order
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Component
 import kotlin.time.Duration.Companion.minutes
 
+@Order(4)
 @Component
 class CollectionCommand(
     @Qualifier("discordScope") private val scope: CoroutineScope,

@@ -14,8 +14,10 @@ import dev.kord.rest.builder.interaction.string
 import dev.kord.rest.builder.message.embed
 import io.ktor.client.request.forms.ChannelProvider
 import io.ktor.utils.io.ByteReadChannel
+import org.springframework.core.annotation.Order
 import org.springframework.stereotype.Component
 
+@Order(5)
 @Component
 class ViewCommand(
     private val cardReplicaService: CardReplicaService,

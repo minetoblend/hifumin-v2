@@ -11,8 +11,10 @@ import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.rest.builder.interaction.ChatInputCreateBuilder
 import kotlinx.coroutines.CoroutineScope
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.core.annotation.Order
 import org.springframework.stereotype.Component
 
+@Order(3)
 @Component
 class BurnCommand(
     private val cardReplicaService: CardReplicaService,

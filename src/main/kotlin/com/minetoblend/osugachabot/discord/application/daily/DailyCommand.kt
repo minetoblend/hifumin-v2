@@ -14,6 +14,7 @@ import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.behavior.interaction.respondPublic
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.core.annotation.Order
 import org.springframework.stereotype.Component
 
 private const val BASE_DAILY_GOLD = 100L
@@ -23,6 +24,7 @@ private const val MAX_STREAK_BONUS_DAY = 7
 private fun goldRewardForStreak(streak: Int): Long =
     BASE_DAILY_GOLD + (minOf(streak, MAX_STREAK_BONUS_DAY) - 1) * GOLD_PER_STREAK_DAY
 
+@Order(2)
 @Component
 class DailyCommand(
     private val cooldownService: CooldownService,

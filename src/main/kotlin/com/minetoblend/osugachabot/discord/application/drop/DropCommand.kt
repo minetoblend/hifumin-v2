@@ -25,8 +25,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import com.minetoblend.osugachabot.discord.utils.toDiscordRelativeTimestamp
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.core.annotation.Order
 import org.springframework.stereotype.Component
 
+@Order(1)
 @Component
 class DropCommand(
     private val dropService: DropService,
