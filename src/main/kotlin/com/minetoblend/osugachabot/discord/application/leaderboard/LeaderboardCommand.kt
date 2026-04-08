@@ -4,6 +4,8 @@ import com.minetoblend.osugachabot.discord.PaginatedMessage
 import com.minetoblend.osugachabot.discord.SlashCommand
 import com.minetoblend.osugachabot.inventory.InventoryService
 import com.minetoblend.osugachabot.leaderboard.CollectionValueService
+import com.minetoblend.osugachabot.stats.UserAction
+import com.minetoblend.osugachabot.stats.UserStatsService
 import dev.kord.core.entity.interaction.ChatInputCommandInteraction
 import dev.kord.core.entity.interaction.SubCommand
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
@@ -23,6 +25,7 @@ class LeaderboardCommand(
     @Qualifier("discordScope") private val scope: CoroutineScope,
     private val collectionValueService: CollectionValueService,
     private val inventoryService: InventoryService,
+    private val userStatsService: UserStatsService,
 ) : SlashCommand {
     override val name = "leaderboard"
     override val description = "Shows leaderboards"
@@ -30,6 +33,7 @@ class LeaderboardCommand(
     override fun ChatInputCreateBuilder.declare() {
         subCommand("collection", "Top collectors by total collection value") {}
         subCommand("gold", "Top users by gold in inventory") {}
+        subCommand("claims", "Top users by cards claimed") {}
     }
 
     override suspend fun ChatInputCommandInteractionCreateEvent.handle() {
@@ -40,6 +44,9 @@ class LeaderboardCommand(
                 }
                 "gold" -> scope.launch {
                     GoldLeaderboardMessage(interaction).run(1.minutes)
+                }
+                "claims" -> scope.launch {
+                    ClaimsLeaderboardMessage(interaction).run(1.minutes)
                 }
             }
             else -> {}
@@ -90,6 +97,32 @@ class LeaderboardCommand(
                     else -> entries.mapIndexed { i, entry ->
                         val rank = offset + i + 1
                         "**#$rank** ${entry.amount} gold · <@${entry.userId.value}>"
+                    }.joinToString("\n")
+                }
+
+                pageFooter()
+            }
+        }
+    }
+
+    private inner class ClaimsLeaderboardMessage(interaction: ChatInputCommandInteraction) :
+        PaginatedMessage(scope, interaction) {
+
+        override suspend fun getItemCount(): Int =
+            userStatsService.getLeaderboard(UserAction.CLAIM, PageRequest.of(0, 1)).totalElements.toInt()
+
+        override suspend fun MessageBuilder.renderPage(page: PageRequest) {
+            val entries = userStatsService.getLeaderboard(UserAction.CLAIM, page)
+            val offset = page.pageNumber * page.pageSize
+
+            embed {
+                title = "Most Cards Claimed"
+
+                description = when {
+                    entries.isEmpty -> "No entries yet."
+                    else -> entries.mapIndexed { i, entry ->
+                        val rank = offset + i + 1
+                        "**#$rank** ${entry.count} cards claimed · <@${entry.userId.value}>"
                     }.joinToString("\n")
                 }
 

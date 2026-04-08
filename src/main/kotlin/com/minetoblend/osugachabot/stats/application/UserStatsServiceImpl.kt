@@ -6,6 +6,7 @@ import com.minetoblend.osugachabot.drops.CardClaimedEvent
 import com.minetoblend.osugachabot.drops.DropCreatedEvent
 import com.minetoblend.osugachabot.drops.SuperDropCreatedEvent
 import com.minetoblend.osugachabot.stats.UserAction
+import com.minetoblend.osugachabot.stats.UserActionEntry
 import com.minetoblend.osugachabot.stats.UserStatsService
 import com.minetoblend.osugachabot.stats.persistence.UserActionStatEntity
 import com.minetoblend.osugachabot.stats.persistence.UserActionStatId
@@ -13,6 +14,9 @@ import com.minetoblend.osugachabot.stats.persistence.UserActionStatRepository
 import com.minetoblend.osugachabot.trading.TradeAcceptedEvent
 import com.minetoblend.osugachabot.trading.TradeInitiatedEvent
 import com.minetoblend.osugachabot.users.UserId
+import com.minetoblend.osugachabot.users.toUserId
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
@@ -29,6 +33,10 @@ class UserStatsServiceImpl(
         val byAction = entities.associate { it.id.action to it.count }
         return UserAction.entries.associateWith { action -> byAction[action.name] ?: 0L }
     }
+
+    override fun getLeaderboard(action: UserAction, pageable: Pageable): Page<UserActionEntry> =
+        repository.findByIdActionOrderByCountDesc(action.name, pageable)
+            .map { UserActionEntry(it.id.userId.toUserId(), action, it.count) }
 
     @TransactionalEventListener(phase = AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
