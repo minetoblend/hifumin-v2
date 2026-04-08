@@ -38,7 +38,7 @@ class LeaderboardCommand(
         subCommand("burns", "Top users by cards burned") {}
         subCommand("mint", "Top users by mint condition cards owned") {}
         subCommand("foil", "Top users by foil cards owned") {}
-        subCommand("collection size", "Top collectors by total number of cards") {}
+        subCommand("collectionsize", "Top collectors by total number of cards") {}
     }
 
     override suspend fun ChatInputCommandInteractionCreateEvent.handle() {
