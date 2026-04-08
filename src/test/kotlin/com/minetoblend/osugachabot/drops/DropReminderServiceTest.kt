@@ -79,6 +79,10 @@ class RecordingDiscordMessagingService : DiscordMessagingService {
         // no-op for tests
     }
 
+    override suspend fun sendChannelMessageWithImage(channelId: Long, message: String, imageBytes: ByteArray, fileName: String) {
+        // no-op for tests
+    }
+
     fun wasSentTo(userId: UserId) = recipients.contains(userId)
 
     fun clear() = recipients.clear()

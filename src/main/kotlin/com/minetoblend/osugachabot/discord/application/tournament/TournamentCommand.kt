@@ -4,6 +4,7 @@ import com.minetoblend.osugachabot.cards.CardReplicaId.Companion.toCardReplicaId
 import com.minetoblend.osugachabot.discord.SlashCommand
 import com.minetoblend.osugachabot.discord.utils.cardId
 import com.minetoblend.osugachabot.discord.utils.toDiscordRelativeTimestamp
+import com.minetoblend.osugachabot.graphics.CardRenderer
 import com.minetoblend.osugachabot.tournament.EnterTournamentResult
 import com.minetoblend.osugachabot.tournament.TournamentService
 import com.minetoblend.osugachabot.tournament.application.TournamentScheduler
@@ -17,12 +18,15 @@ import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.rest.builder.interaction.ChatInputCreateBuilder
 import dev.kord.rest.builder.interaction.subCommand
 import dev.kord.rest.builder.message.embed
+import io.ktor.client.request.forms.*
+import io.ktor.utils.io.*
 import org.springframework.stereotype.Component
 import kotlin.time.Duration.Companion.milliseconds
 
 @Component
 class TournamentCommand(
     private val tournamentService: TournamentService,
+    private val cardRenderer: CardRenderer,
 ) : SlashCommand {
     override val name = "tournament"
     override val description = "Enter or view the current tournament"
@@ -93,8 +97,17 @@ class TournamentCommand(
 
         val endsAt = tournament.createdAt.toEpochMilli() + TournamentScheduler.TOURNAMENT_DURATION.inWholeMilliseconds
         val remaining = (endsAt - System.currentTimeMillis()).milliseconds
+        val viewerUserId = interaction.user.id.toUserId()
+
+        val previewBracket = tournamentService.buildPreviewBracket(tournament, viewerUserId)
+        val bracketImage = if (previewBracket.rounds.isNotEmpty()) {
+            runCatching { cardRenderer.renderBracket(previewBracket, tournament.name) }.getOrNull()
+        } else null
 
         interaction.respondPublic {
+            if (bracketImage != null) {
+                addFile("bracket.png", ChannelProvider { ByteReadChannel(bracketImage) })
+            }
             embed {
                 title = tournament.name
                 description = buildString {
@@ -102,7 +115,9 @@ class TournamentCommand(
                     appendLine("**Prize:** :money_bag: ${TournamentServiceImpl.PRIZE_GOLD} gold + SSR+ card (Mint)")
                     appendLine("**Ends:** ${remaining.toDiscordRelativeTimestamp()}")
                 }
-
+                if (bracketImage != null) {
+                    image = "attachment://bracket.png"
+                }
                 footer {
                     text = """
                            A tournament takes place every 12 hours.

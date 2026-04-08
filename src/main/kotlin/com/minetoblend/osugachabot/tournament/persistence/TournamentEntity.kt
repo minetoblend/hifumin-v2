@@ -1,5 +1,6 @@
 package com.minetoblend.osugachabot.tournament.persistence
 
+import com.minetoblend.osugachabot.tournament.TournamentBracket
 import com.minetoblend.osugachabot.tournament.TournamentStatus
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
@@ -25,6 +26,10 @@ class TournamentEntity {
 
     @Column(nullable = true)
     var resolvedAt: Instant? = null
+
+    @Convert(converter = TournamentBracketConverter::class)
+    @Column(columnDefinition = "JSON", nullable = true)
+    var bracket: TournamentBracket? = null
 
     @OneToMany(mappedBy = "tournament", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
     var entries: MutableList<TournamentEntryEntity> = mutableListOf()

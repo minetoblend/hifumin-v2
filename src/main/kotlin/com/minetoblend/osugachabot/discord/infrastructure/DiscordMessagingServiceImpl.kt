@@ -4,7 +4,10 @@ import com.minetoblend.osugachabot.discord.DiscordMessagingService
 import com.minetoblend.osugachabot.users.UserId
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
+import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.channel.MessageChannel
+import io.ktor.client.request.forms.*
+import io.ktor.utils.io.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
@@ -24,5 +27,19 @@ class DiscordMessagingServiceImpl(
         val kord = kord ?: return
         val channel = kord.getChannel(Snowflake(channelId.toULong())) as? MessageChannel ?: return
         channel.createMessage(message)
+    }
+
+    override suspend fun sendChannelMessageWithImage(
+        channelId: Long,
+        message: String,
+        imageBytes: ByteArray,
+        fileName: String,
+    ) {
+        val kord = kord ?: return
+        val channel = kord.getChannel(Snowflake(channelId.toULong())) as? MessageChannel ?: return
+        channel.createMessage {
+            this.content = message
+            this.addFile(fileName, ChannelProvider { ByteReadChannel(imageBytes) })
+        }
     }
 }

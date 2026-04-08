@@ -16,6 +16,8 @@ interface TournamentService {
     fun resolveTournament(tournamentId: TournamentId): TournamentResolution?
 
     fun ensureActiveTournament(): Tournament
+
+    fun buildPreviewBracket(tournament: Tournament, viewerUserId: UserId): TournamentBracket
 }
 
 sealed interface EnterTournamentResult {

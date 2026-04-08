@@ -11,6 +11,7 @@ data class Tournament(
     val status: TournamentStatus,
     val createdAt: Instant,
     val resolvedAt: Instant?,
+    val bracket: TournamentBracket? = null,
     val entries: List<TournamentEntry> = emptyList(),
     val placements: List<TournamentPlacement> = emptyList(),
 )

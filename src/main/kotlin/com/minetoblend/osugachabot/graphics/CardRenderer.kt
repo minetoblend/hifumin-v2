@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.decodeToImageBitmap
 import androidx.compose.ui.renderComposeScene
 import androidx.compose.ui.unit.dp
 import com.minetoblend.osugachabot.cards.Card
+import com.minetoblend.osugachabot.tournament.TournamentBracket
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -71,6 +72,35 @@ class CardRenderer(
                     CardComposable(renderable.card, avatar, renderable.foil)
                 }
             }
+        }
+
+        return image
+            .encodeToData(EncodedImageFormat.PNG)!!
+            .bytes
+    }
+
+    suspend fun renderBracket(bracket: TournamentBracket, tournamentName: String): ByteArray {
+        // Collect all unique osu user IDs from the bracket entries
+        val userIds = bracket.rounds
+            .flatMap { it.matches }
+            .flatMap { listOfNotNull(it.entry1, it.entry2) }
+            .map { it.cardReplica.card.userId }
+            .distinct()
+
+        val avatars: Map<Long, ImageBitmap?> = coroutineScope {
+            userIds.associateWith { userId ->
+                async(Dispatchers.IO) { loadAvatar(userId) }
+            }.mapValues { it.value.await() }
+        }
+
+        val (width, height) = computeBracketSize(bracket)
+
+        val image = renderComposeScene(width = width, height = height) {
+            BracketComposable(
+                bracket = bracket,
+                tournamentName = tournamentName,
+                avatars = avatars,
+            )
         }
 
         return image
