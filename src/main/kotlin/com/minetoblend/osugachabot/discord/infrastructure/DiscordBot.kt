@@ -9,6 +9,8 @@ import dev.kord.core.entity.interaction.GuildChatInputCommandInteraction
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.core.on
+import dev.kord.gateway.Intent
+import dev.kord.gateway.Intents
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.springframework.beans.factory.DisposableBean
@@ -65,7 +67,11 @@ class DiscordBot(
                 handler.run { handle() }
             }
 
-            kord.login()
+            kord.login {
+                intents {
+                    +Intent.Guilds
+                }
+            }
         }
     }
 }
