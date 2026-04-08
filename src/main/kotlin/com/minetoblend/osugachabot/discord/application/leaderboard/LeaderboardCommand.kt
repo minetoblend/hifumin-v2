@@ -36,6 +36,7 @@ class LeaderboardCommand(
         subCommand("claims", "Top users by cards claimed") {}
         subCommand("drops", "Top users by drops created") {}
         subCommand("burns", "Top users by cards burned") {}
+        subCommand("mint", "Top users by mint condition cards owned") {}
     }
 
     override suspend fun ChatInputCommandInteractionCreateEvent.handle() {
@@ -55,6 +56,9 @@ class LeaderboardCommand(
                 }
                 "burns" -> scope.launch {
                     BurnsLeaderboardMessage(interaction).run(1.minutes)
+                }
+                "mint" -> scope.launch {
+                    MintLeaderboardMessage(interaction).run(1.minutes)
                 }
             }
             else -> {}
@@ -105,6 +109,32 @@ class LeaderboardCommand(
                     else -> entries.mapIndexed { i, entry ->
                         val rank = offset + i + 1
                         "**#$rank** ${entry.amount} gold · <@${entry.userId.value}>"
+                    }.joinToString("\n")
+                }
+
+                pageFooter()
+            }
+        }
+    }
+
+    private inner class MintLeaderboardMessage(interaction: ChatInputCommandInteraction) :
+        PaginatedMessage(scope, interaction) {
+
+        override suspend fun getItemCount(): Int =
+            collectionValueService.getMintLeaderboard(PageRequest.of(0, 1)).totalElements.toInt()
+
+        override suspend fun MessageBuilder.renderPage(page: PageRequest) {
+            val entries = collectionValueService.getMintLeaderboard(page)
+            val offset = page.pageNumber * page.pageSize
+
+            embed {
+                title = "✨ Most Mint Cards"
+
+                description = when {
+                    entries.isEmpty -> "No entries yet."
+                    else -> entries.mapIndexed { i, entry ->
+                        val rank = offset + i + 1
+                        "**#$rank** ${entry.mintCount} mint cards · <@${entry.userId.value}>"
                     }.joinToString("\n")
                 }
 
