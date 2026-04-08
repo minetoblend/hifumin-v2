@@ -52,6 +52,7 @@ class CardReplicaServiceImpl(
         return OwnedCardResult.Success(card)
     }
 
+    @Transactional
     override fun burnCard(id: CardReplicaId, userId: UserId): BurnCardResult {
         val card = cardReplicaRepository.findByIdOrNull(id.value) ?: return BurnCardResult.NotFound
 

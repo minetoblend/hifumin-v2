@@ -1,10 +1,12 @@
 package com.minetoblend.osugachabot.daily.application
 
+import com.minetoblend.osugachabot.daily.DailyClaimedEvent
 import com.minetoblend.osugachabot.daily.DailyStreak
 import com.minetoblend.osugachabot.daily.DailyStreakService
 import com.minetoblend.osugachabot.daily.persistence.DailyStreakEntity
 import com.minetoblend.osugachabot.daily.persistence.DailyStreakRepository
 import com.minetoblend.osugachabot.users.UserId
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import kotlin.time.Clock
@@ -17,6 +19,7 @@ private val STREAK_BREAK_WINDOW = 48.hours
 @Service
 class DailyStreakServiceImpl(
     private val dailyStreakRepository: DailyStreakRepository,
+    private val eventPublisher: ApplicationEventPublisher,
 ) : DailyStreakService {
 
     @Transactional
@@ -31,6 +34,7 @@ class DailyStreakServiceImpl(
                 lastClaimedAt = now.toJavaInstant(),
             )
             dailyStreakRepository.save(newEntity)
+            eventPublisher.publishEvent(DailyClaimedEvent(userId))
             return DailyStreak(userId, 1)
         }
 
@@ -38,6 +42,7 @@ class DailyStreakServiceImpl(
         entity.currentStreak = if (elapsed <= STREAK_BREAK_WINDOW) entity.currentStreak + 1 else 1
         entity.lastClaimedAt = now.toJavaInstant()
 
+        eventPublisher.publishEvent(DailyClaimedEvent(userId))
         return DailyStreak(userId, entity.currentStreak)
     }
 

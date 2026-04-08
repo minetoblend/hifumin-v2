@@ -3,7 +3,6 @@ package com.minetoblend.osugachabot.discord.application.daily
 import com.minetoblend.osugachabot.cooldown.CooldownResult
 import com.minetoblend.osugachabot.cooldown.CooldownService
 import com.minetoblend.osugachabot.cooldown.CooldownType
-import com.minetoblend.osugachabot.daily.DailyClaimedEvent
 import com.minetoblend.osugachabot.daily.DailyStreakService
 import com.minetoblend.osugachabot.discord.SlashCommand
 import com.minetoblend.osugachabot.discord.utils.toDiscordRelativeTimestamp
@@ -13,7 +12,6 @@ import com.minetoblend.osugachabot.users.toUserId
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.behavior.interaction.respondPublic
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.core.annotation.Order
 import org.springframework.stereotype.Component
 
@@ -30,7 +28,6 @@ class DailyCommand(
     private val cooldownService: CooldownService,
     private val inventoryService: InventoryService,
     private val dailyStreakService: DailyStreakService,
-    private val eventPublisher: ApplicationEventPublisher,
 ) : SlashCommand {
     override val name = "daily"
     override val description = "Claim your daily gold reward"
@@ -44,7 +41,6 @@ class DailyCommand(
                 val gold = goldRewardForStreak(streak.currentStreak)
 
                 inventoryService.addItems(userId, ItemType.Gold, gold)
-                eventPublisher.publishEvent(DailyClaimedEvent(userId))
 
                 val streakMessage = if (streak.currentStreak > 1) {
                     " :fire: **${streak.currentStreak} day streak!**"
