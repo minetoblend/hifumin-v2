@@ -34,6 +34,7 @@ class LeaderboardCommand(
         subCommand("collection", "Top collectors by total collection value") {}
         subCommand("gold", "Top users by gold in inventory") {}
         subCommand("claims", "Top users by cards claimed") {}
+        subCommand("drops", "Top users by drops created") {}
     }
 
     override suspend fun ChatInputCommandInteractionCreateEvent.handle() {
@@ -47,6 +48,9 @@ class LeaderboardCommand(
                 }
                 "claims" -> scope.launch {
                     ClaimsLeaderboardMessage(interaction).run(1.minutes)
+                }
+                "drops" -> scope.launch {
+                    DropsLeaderboardMessage(interaction).run(1.minutes)
                 }
             }
             else -> {}
@@ -97,6 +101,32 @@ class LeaderboardCommand(
                     else -> entries.mapIndexed { i, entry ->
                         val rank = offset + i + 1
                         "**#$rank** ${entry.amount} gold · <@${entry.userId.value}>"
+                    }.joinToString("\n")
+                }
+
+                pageFooter()
+            }
+        }
+    }
+
+    private inner class DropsLeaderboardMessage(interaction: ChatInputCommandInteraction) :
+        PaginatedMessage(scope, interaction) {
+
+        override suspend fun getItemCount(): Int =
+            userStatsService.getLeaderboard(UserAction.DROP, PageRequest.of(0, 1)).totalElements.toInt()
+
+        override suspend fun MessageBuilder.renderPage(page: PageRequest) {
+            val entries = userStatsService.getLeaderboard(UserAction.DROP, page)
+            val offset = page.pageNumber * page.pageSize
+
+            embed {
+                title = "Most Drops Created"
+
+                description = when {
+                    entries.isEmpty -> "No entries yet."
+                    else -> entries.mapIndexed { i, entry ->
+                        val rank = offset + i + 1
+                        "**#$rank** ${entry.count} drops · <@${entry.userId.value}>"
                     }.joinToString("\n")
                 }
 
