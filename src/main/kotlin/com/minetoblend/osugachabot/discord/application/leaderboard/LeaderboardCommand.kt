@@ -3,7 +3,7 @@ package com.minetoblend.osugachabot.discord.application.leaderboard
 import com.minetoblend.osugachabot.discord.PaginatedMessage
 import com.minetoblend.osugachabot.discord.SlashCommand
 import com.minetoblend.osugachabot.inventory.InventoryService
-import com.minetoblend.osugachabot.leaderboard.CollectionValueService
+import com.minetoblend.osugachabot.leaderboard.LeaderboardService
 import com.minetoblend.osugachabot.stats.UserAction
 import com.minetoblend.osugachabot.stats.UserStatsService
 import dev.kord.core.entity.interaction.ChatInputCommandInteraction
@@ -23,7 +23,7 @@ import kotlin.time.Duration.Companion.minutes
 @Component
 class LeaderboardCommand(
     @Qualifier("discordScope") private val scope: CoroutineScope,
-    private val collectionValueService: CollectionValueService,
+    private val leaderboardService: LeaderboardService,
     private val inventoryService: InventoryService,
     private val userStatsService: UserStatsService,
 ) : SlashCommand {
@@ -77,10 +77,10 @@ class LeaderboardCommand(
         PaginatedMessage(scope, interaction) {
 
         override suspend fun getItemCount(): Int =
-            collectionValueService.getLeaderboard(PageRequest.of(0, 1)).totalElements.toInt()
+            leaderboardService.getLeaderboard(PageRequest.of(0, 1)).totalElements.toInt()
 
         override suspend fun MessageBuilder.renderPage(page: PageRequest) {
-            val entries = collectionValueService.getLeaderboard(page)
+            val entries = leaderboardService.getLeaderboard(page)
             val offset = page.pageNumber * page.pageSize
 
             embed {
@@ -129,10 +129,10 @@ class LeaderboardCommand(
         PaginatedMessage(scope, interaction) {
 
         override suspend fun getItemCount(): Int =
-            collectionValueService.getMintLeaderboard(PageRequest.of(0, 1)).totalElements.toInt()
+            leaderboardService.getMintLeaderboard(PageRequest.of(0, 1)).totalElements.toInt()
 
         override suspend fun MessageBuilder.renderPage(page: PageRequest) {
-            val entries = collectionValueService.getMintLeaderboard(page)
+            val entries = leaderboardService.getMintLeaderboard(page)
             val offset = page.pageNumber * page.pageSize
 
             embed {
@@ -155,10 +155,10 @@ class LeaderboardCommand(
         PaginatedMessage(scope, interaction) {
 
         override suspend fun getItemCount(): Int =
-            collectionValueService.getLargestCollectionLeaderboard(PageRequest.of(0, 1)).totalElements.toInt()
+            leaderboardService.getLargestCollectionLeaderboard(PageRequest.of(0, 1)).totalElements.toInt()
 
         override suspend fun MessageBuilder.renderPage(page: PageRequest) {
-            val entries = collectionValueService.getLargestCollectionLeaderboard(page)
+            val entries = leaderboardService.getLargestCollectionLeaderboard(page)
             val offset = page.pageNumber * page.pageSize
 
             embed {
@@ -181,10 +181,10 @@ class LeaderboardCommand(
         PaginatedMessage(scope, interaction) {
 
         override suspend fun getItemCount(): Int =
-            collectionValueService.getFoilLeaderboard(PageRequest.of(0, 1)).totalElements.toInt()
+            leaderboardService.getFoilLeaderboard(PageRequest.of(0, 1)).totalElements.toInt()
 
         override suspend fun MessageBuilder.renderPage(page: PageRequest) {
-            val entries = collectionValueService.getFoilLeaderboard(page)
+            val entries = leaderboardService.getFoilLeaderboard(page)
             val offset = page.pageNumber * page.pageSize
 
             embed {

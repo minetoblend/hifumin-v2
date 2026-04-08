@@ -7,7 +7,7 @@ import com.minetoblend.osugachabot.cards.MintLeaderboardEntry
 import com.minetoblend.osugachabot.cards.persistence.CardReplicaRepository
 import com.minetoblend.osugachabot.drops.CardClaimedEvent
 import com.minetoblend.osugachabot.leaderboard.CollectionValueEntry
-import com.minetoblend.osugachabot.leaderboard.CollectionValueService
+import com.minetoblend.osugachabot.leaderboard.LeaderboardService
 import com.minetoblend.osugachabot.leaderboard.persistence.CollectionValueEntity
 import com.minetoblend.osugachabot.leaderboard.persistence.CollectionValueRepository
 import com.minetoblend.osugachabot.trading.TradeAcceptedEvent
@@ -24,12 +24,12 @@ import org.springframework.transaction.event.TransactionPhase.AFTER_COMMIT
 import org.springframework.transaction.event.TransactionalEventListener
 
 @Service
-class CollectionValueServiceImpl(
+class LeaderboardServiceImpl(
     private val collectionValueRepository: CollectionValueRepository,
     private val cardReplicaRepository: CardReplicaRepository,
-) : CollectionValueService {
+) : LeaderboardService {
 
-    private val log = LoggerFactory.getLogger(CollectionValueServiceImpl::class.java)
+    private val log = LoggerFactory.getLogger(LeaderboardServiceImpl::class.java)
 
     override fun getLeaderboard(pageable: Pageable): Page<CollectionValueEntry> =
         collectionValueRepository.findAllByOrderByTotalValueDesc(pageable).map { it.toDomain() }

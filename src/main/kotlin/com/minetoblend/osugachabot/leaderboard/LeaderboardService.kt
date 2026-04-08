@@ -6,7 +6,7 @@ import com.minetoblend.osugachabot.users.UserId
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 
-interface CollectionValueService {
+interface LeaderboardService {
     fun getLeaderboard(pageable: Pageable): Page<CollectionValueEntry>
     fun getLargestCollectionLeaderboard(pageable: Pageable): Page<CollectionValueEntry>
     fun getMintLeaderboard(pageable: Pageable): Page<MintLeaderboardEntry>

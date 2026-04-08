@@ -17,10 +17,10 @@ import kotlin.test.assertEquals
 
 @Import(TestcontainersConfiguration::class)
 @SpringBootTest
-class CollectionValueServiceImplTest {
+class LeaderboardServiceImplTest {
 
     @Autowired
-    private lateinit var collectionValueService: CollectionValueService
+    private lateinit var leaderboardService: LeaderboardService
 
     @Autowired
     private lateinit var cardRepository: CardRepository
@@ -39,7 +39,7 @@ class CollectionValueServiceImplTest {
 
     @Test
     fun `getLeaderboard returns empty page when no entries exist`() {
-        val page = collectionValueService.getLeaderboard(PageRequest.of(0, 10))
+        val page = leaderboardService.getLeaderboard(PageRequest.of(0, 10))
         // Just verify it doesn't throw — other tests may have inserted entries
     }
 
@@ -50,10 +50,10 @@ class CollectionValueServiceImplTest {
         createReplica(card, userId.value, burnValue = 200)
 
         transactionTemplate.execute {
-            collectionValueService.recompute(userId)
+            leaderboardService.recompute(userId)
         }
 
-        val entry = collectionValueService.getCollectionValue(userId)
+        val entry = leaderboardService.getCollectionValue(userId)
         assertEquals(200L, entry.totalValue)
         assertEquals(1, entry.cardCount)
     }
@@ -67,10 +67,10 @@ class CollectionValueServiceImplTest {
         createReplica(card2, userId.value, burnValue = 250)
 
         transactionTemplate.execute {
-            collectionValueService.recompute(userId)
+            leaderboardService.recompute(userId)
         }
 
-        val entry = collectionValueService.getCollectionValue(userId)
+        val entry = leaderboardService.getCollectionValue(userId)
         assertEquals(400L, entry.totalValue)
         assertEquals(2, entry.cardCount)
     }
@@ -82,16 +82,16 @@ class CollectionValueServiceImplTest {
         val replica = createReplica(card, userId.value, burnValue = 300)
 
         transactionTemplate.execute {
-            collectionValueService.recompute(userId)
+            leaderboardService.recompute(userId)
         }
-        assertEquals(300L, collectionValueService.getCollectionValue(userId).totalValue)
+        assertEquals(300L, leaderboardService.getCollectionValue(userId).totalValue)
 
         cardReplicaRepository.delete(replica)
         transactionTemplate.execute {
-            collectionValueService.recompute(userId)
+            leaderboardService.recompute(userId)
         }
 
-        val entry = collectionValueService.getCollectionValue(userId)
+        val entry = leaderboardService.getCollectionValue(userId)
         assertEquals(0L, entry.totalValue)
         assertEquals(0, entry.cardCount)
     }
@@ -106,11 +106,11 @@ class CollectionValueServiceImplTest {
         createReplica(card2, userB.value, burnValue = 800)
 
         transactionTemplate.execute {
-            collectionValueService.recompute(userA)
-            collectionValueService.recompute(userB)
+            leaderboardService.recompute(userA)
+            leaderboardService.recompute(userB)
         }
 
-        val page = collectionValueService.getLeaderboard(PageRequest.of(0, 100))
+        val page = leaderboardService.getLeaderboard(PageRequest.of(0, 100))
         val entries = page.content.filter { it.userId == userA || it.userId == userB }
         assertEquals(2, entries.size)
         assertEquals(userB, entries[0].userId)
@@ -123,11 +123,11 @@ class CollectionValueServiceImplTest {
         users.forEachIndexed { i, userId ->
             val card = createCard(10010L + i, "PaginatedUser$i")
             createReplica(card, userId.value, burnValue = (i + 1) * 100)
-            transactionTemplate.execute { collectionValueService.recompute(userId) }
+            transactionTemplate.execute { leaderboardService.recompute(userId) }
         }
 
-        val page0 = collectionValueService.getLeaderboard(PageRequest.of(0, 5))
-        val page1 = collectionValueService.getLeaderboard(PageRequest.of(1, 5))
+        val page0 = leaderboardService.getLeaderboard(PageRequest.of(0, 5))
+        val page1 = leaderboardService.getLeaderboard(PageRequest.of(1, 5))
 
         assertEquals(5, page0.content.size)
         assertEquals(5, page1.content.size)
