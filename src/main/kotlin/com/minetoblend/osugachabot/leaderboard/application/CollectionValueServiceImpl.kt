@@ -34,6 +34,9 @@ class CollectionValueServiceImpl(
     override fun getLeaderboard(pageable: Pageable): Page<CollectionValueEntry> =
         collectionValueRepository.findAllByOrderByTotalValueDesc(pageable).map { it.toDomain() }
 
+    override fun getLargestCollectionLeaderboard(pageable: Pageable): Page<CollectionValueEntry> =
+        collectionValueRepository.findAllByOrderByCardCountDesc(pageable).map { it.toDomain() }
+
     override fun getMintLeaderboard(pageable: Pageable): Page<MintLeaderboardEntry> =
         cardReplicaRepository.countByConditionGroupByUser(CardCondition.Mint, pageable)
             .map { MintLeaderboardEntry(it.getUserId().toUserId(), it.getCount()) }

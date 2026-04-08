@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable
 
 interface CollectionValueService {
     fun getLeaderboard(pageable: Pageable): Page<CollectionValueEntry>
+    fun getLargestCollectionLeaderboard(pageable: Pageable): Page<CollectionValueEntry>
     fun getMintLeaderboard(pageable: Pageable): Page<MintLeaderboardEntry>
     fun getFoilLeaderboard(pageable: Pageable): Page<FoilLeaderboardEntry>
     fun getCollectionValue(userId: UserId): CollectionValueEntry

@@ -6,4 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface CollectionValueRepository : JpaRepository<CollectionValueEntity, Long> {
     fun findAllByOrderByTotalValueDesc(pageable: Pageable): Page<CollectionValueEntity>
+    fun findAllByOrderByCardCountDesc(pageable: Pageable): Page<CollectionValueEntity>
 }

@@ -38,6 +38,7 @@ class LeaderboardCommand(
         subCommand("burns", "Top users by cards burned") {}
         subCommand("mint", "Top users by mint condition cards owned") {}
         subCommand("foil", "Top users by foil cards owned") {}
+        subCommand("size", "Top collectors by total number of cards") {}
     }
 
     override suspend fun ChatInputCommandInteractionCreateEvent.handle() {
@@ -63,6 +64,9 @@ class LeaderboardCommand(
                 }
                 "foil" -> scope.launch {
                     FoilLeaderboardMessage(interaction).run(1.minutes)
+                }
+                "size" -> scope.launch {
+                    CollectionSizeLeaderboardMessage(interaction).run(1.minutes)
                 }
             }
             else -> {}
@@ -139,6 +143,32 @@ class LeaderboardCommand(
                     else -> entries.mapIndexed { i, entry ->
                         val rank = offset + i + 1
                         "**#$rank** ${entry.mintCount} mint cards · <@${entry.userId.value}>"
+                    }.joinToString("\n")
+                }
+
+                pageFooter()
+            }
+        }
+    }
+
+    private inner class CollectionSizeLeaderboardMessage(interaction: ChatInputCommandInteraction) :
+        PaginatedMessage(scope, interaction) {
+
+        override suspend fun getItemCount(): Int =
+            collectionValueService.getLargestCollectionLeaderboard(PageRequest.of(0, 1)).totalElements.toInt()
+
+        override suspend fun MessageBuilder.renderPage(page: PageRequest) {
+            val entries = collectionValueService.getLargestCollectionLeaderboard(page)
+            val offset = page.pageNumber * page.pageSize
+
+            embed {
+                title = "Largest Collections"
+
+                description = when {
+                    entries.isEmpty -> "No entries yet."
+                    else -> entries.mapIndexed { i, entry ->
+                        val rank = offset + i + 1
+                        "**#$rank** ${entry.cardCount} cards · <@${entry.userId.value}>"
                     }.joinToString("\n")
                 }
 
