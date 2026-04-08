@@ -89,7 +89,7 @@ class TournamentCommand(
         val endsAt = tournament.createdAt.toEpochMilli() + TournamentScheduler.TOURNAMENT_DURATION.inWholeMilliseconds
         val remaining = (endsAt - System.currentTimeMillis()).milliseconds
 
-        interaction.respondEphemeral {
+        interaction.respondPublic {
             embed {
                 title = tournament.name
                 description = buildString {
