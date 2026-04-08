@@ -40,6 +40,7 @@ class TournamentCommand(
                 "enter" -> handleEnter()
                 "info" -> handleInfo()
             }
+
             else -> {}
         }
     }
@@ -63,15 +64,19 @@ class TournamentCommand(
         when (val result = tournamentService.enterTournament(userId, cardReplicaId, channelId, guildId)) {
             is EnterTournamentResult.Entered -> {
                 interaction.respondPublic {
-                    content = "${interaction.user.mention} entered the **${result.tournament.name}** with card `${cardReplicaId.toDisplayId()}`!"
+                    content =
+                        "${interaction.user.mention} entered the **${result.tournament.name}** with card `${cardReplicaId.toDisplayId()}`!"
                 }
             }
+
             EnterTournamentResult.NoActiveTournament -> {
                 interaction.respondEphemeral { content = "There is no active tournament right now." }
             }
+
             EnterTournamentResult.AlreadyEntered -> {
                 interaction.respondEphemeral { content = "You have already entered this tournament!" }
             }
+
             EnterTournamentResult.CardNotOwned -> {
                 interaction.respondEphemeral { content = "You don't own that card!" }
             }
@@ -99,7 +104,11 @@ class TournamentCommand(
                 }
 
                 footer {
-                    text = "A tournament takes place every 12 hours. Enter with one of your cards using `/tournament enter` — the stronger your card, the better your odds! The winner is randomly selected, weighted by card stats."
+                    text = """
+                           A tournament takes place every 12 hours.
+                           Enter with one of your cards using /tournament enter - the stronger your card, the better your odds!
+                           The winner is randomly selected, weighted by card stats.
+                           """.trimIndent()
                 }
             }
         }
