@@ -10,11 +10,15 @@ databaseChangeLog:
                   name: user_id
                   type: BIGINT
                   constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_upgrade_pity
                     nullable: false
               - column:
                   name: source_condition
                   type: INT
                   constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_upgrade_pity
                     nullable: false
               - column:
                   name: failures
@@ -22,7 +26,3 @@ databaseChangeLog:
                   defaultValueNumeric: 0
                   constraints:
                     nullable: false
-        - addPrimaryKey:
-            tableName: upgrade_pity
-            columnNames: user_id, source_condition
-            constraintName: pk_upgrade_pity
