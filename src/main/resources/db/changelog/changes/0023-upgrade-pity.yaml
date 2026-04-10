@@ -1,0 +1,28 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0023-create-upgrade-pity-table
+      author: liquibase
+      changes:
+        - createTable:
+            tableName: upgrade_pity
+            columns:
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: source_condition
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: failures
+                  type: INT
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+        - addPrimaryKey:
+            tableName: upgrade_pity
+            columnNames: user_id, source_condition
+            constraintName: pk_upgrade_pity

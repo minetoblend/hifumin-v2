@@ -35,6 +35,9 @@ class CardReplicaUpgradeServiceImplTest {
     @Autowired
     private lateinit var inventoryService: InventoryService
 
+    @Autowired
+    private lateinit var upgradePityService: UpgradePityService
+
     @MockitoBean
     private lateinit var random: Random
 
@@ -133,6 +136,99 @@ class CardReplicaUpgradeServiceImplTest {
 
         assertIs<UpgradeCardResult.Success>(result)
         assertEquals(CardCondition.Good, result.newCondition)
+    }
+
+    @Test
+    fun `upgradeCard increments pity on failure`() {
+        val userId = UserId(80L)
+        val card = saveCard()
+        val entity = cardReplicaRepository.save(CardReplicaEntity(card, userId.value, CardCondition.Good))
+        inventoryService.addItems(userId, ItemType.Gold, 10000L)
+
+        given(random.nextDouble()).willReturn(1.0) // always fail
+
+        cardReplicaService.upgradeCard(CardReplicaId(entity.id), userId)
+        cardReplicaService.upgradeCard(CardReplicaId(entity.id), userId)
+
+        assertEquals(2, upgradePityService.getPity(userId, CardCondition.Good))
+    }
+
+    @Test
+    fun `upgradeCard resets pity on natural success`() {
+        val userId = UserId(81L)
+        val card = saveCard()
+        val entity = cardReplicaRepository.save(CardReplicaEntity(card, userId.value, CardCondition.Good))
+        inventoryService.addItems(userId, ItemType.Gold, 10000L)
+
+        given(random.nextDouble()).willReturn(1.0) // fail
+        cardReplicaService.upgradeCard(CardReplicaId(entity.id), userId)
+        cardReplicaService.upgradeCard(CardReplicaId(entity.id), userId)
+        assertEquals(2, upgradePityService.getPity(userId, CardCondition.Good))
+
+        given(random.nextDouble()).willReturn(0.0) // succeed
+        cardReplicaService.upgradeCard(CardReplicaId(entity.id), userId)
+
+        assertEquals(0, upgradePityService.getPity(userId, CardCondition.Good))
+    }
+
+    @Test
+    fun `upgradeCard guarantees success once pity threshold is reached`() {
+        val userId = UserId(82L)
+        val card = saveCard()
+        val entity = cardReplicaRepository.save(CardReplicaEntity(card, userId.value, CardCondition.Good))
+        inventoryService.addItems(userId, ItemType.Gold, 100000L)
+
+        given(random.nextDouble()).willReturn(1.0) // rng would always fail
+
+        val threshold = CardCondition.Good.upgradePityThreshold
+        repeat(threshold - 1) {
+            val result = cardReplicaService.upgradeCard(CardReplicaId(entity.id), userId)
+            assertIs<UpgradeCardResult.Failed>(result)
+        }
+
+        // Next attempt should be guaranteed even with unfavorable rng
+        val result = cardReplicaService.upgradeCard(CardReplicaId(entity.id), userId)
+
+        assertIs<UpgradeCardResult.Success>(result)
+        assertEquals(CardCondition.Mint, result.newCondition)
+        assertEquals(0, upgradePityService.getPity(userId, CardCondition.Good))
+    }
+
+    @Test
+    fun `pity is tracked per source condition`() {
+        val userId = UserId(83L)
+        val card = saveCard()
+        val poorEntity = cardReplicaRepository.save(CardReplicaEntity(card, userId.value, CardCondition.Poor))
+        val goodEntity = cardReplicaRepository.save(CardReplicaEntity(card, userId.value, CardCondition.Good))
+        inventoryService.addItems(userId, ItemType.Gold, 10000L)
+
+        given(random.nextDouble()).willReturn(1.0)
+
+        cardReplicaService.upgradeCard(CardReplicaId(poorEntity.id), userId)
+        cardReplicaService.upgradeCard(CardReplicaId(goodEntity.id), userId)
+        cardReplicaService.upgradeCard(CardReplicaId(goodEntity.id), userId)
+
+        assertEquals(1, upgradePityService.getPity(userId, CardCondition.Poor))
+        assertEquals(2, upgradePityService.getPity(userId, CardCondition.Good))
+    }
+
+    @Test
+    fun `pity is tracked per user`() {
+        val cardA = saveCard()
+        val cardB = saveCard()
+        val userA = UserId(84L)
+        val userB = UserId(85L)
+        val entityA = cardReplicaRepository.save(CardReplicaEntity(cardA, userA.value, CardCondition.Good))
+        val entityB = cardReplicaRepository.save(CardReplicaEntity(cardB, userB.value, CardCondition.Good))
+        inventoryService.addItems(userA, ItemType.Gold, 10000L)
+        inventoryService.addItems(userB, ItemType.Gold, 10000L)
+
+        given(random.nextDouble()).willReturn(1.0)
+
+        cardReplicaService.upgradeCard(CardReplicaId(entityA.id), userA)
+
+        assertEquals(1, upgradePityService.getPity(userA, CardCondition.Good))
+        assertEquals(0, upgradePityService.getPity(userB, CardCondition.Good))
     }
 
     @Test

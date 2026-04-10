@@ -25,6 +25,7 @@ class CardReplicaServiceImpl(
     private val eventPublisher: ApplicationEventPublisher,
     private val random: Random,
     private val cardMutationGuard: CardMutationGuard,
+    private val upgradePityService: UpgradePityService,
 ) : CardReplicaService {
     override fun findById(id: CardReplicaId): CardReplica? =
         cardReplicaRepository.findByIdOrNull(id.value)?.toDomain()
@@ -89,16 +90,22 @@ class CardReplicaServiceImpl(
         if (entity.condition == CardCondition.Mint)
             return UpgradeCardResult.AlreadyMint
 
-        val cost = entity.condition.upgradeCost
+        val sourceCondition = entity.condition
+        val cost = sourceCondition.upgradeCost
         when (inventoryService.removeItems(userId, ItemType.Gold, cost)) {
             RemoveItemsResult.InsufficientItems -> return UpgradeCardResult.InsufficientGold
             RemoveItemsResult.Success -> {}
         }
 
-        return if (random.nextDouble() < entity.condition.upgradeSuccessRate) {
-            entity.condition = entity.condition.nextCondition()
+        val pityReached = upgradePityService.getPity(userId, sourceCondition) + 1 >= sourceCondition.upgradePityThreshold
+        val succeeded = pityReached || random.nextDouble() < sourceCondition.upgradeSuccessRate
+
+        return if (succeeded) {
+            entity.condition = sourceCondition.nextCondition()
+            upgradePityService.reset(userId, sourceCondition)
             UpgradeCardResult.Success(entity.condition)
         } else {
+            upgradePityService.recordFailure(userId, sourceCondition)
             UpgradeCardResult.Failed(entity.condition)
         }
     }

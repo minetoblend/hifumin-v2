@@ -8,10 +8,12 @@ import com.minetoblend.osugachabot.cards.OwnedCardResult.NotFound
 import com.minetoblend.osugachabot.cards.OwnedCardResult.NotOwned
 import com.minetoblend.osugachabot.cards.OwnedCardResult.Success
 import com.minetoblend.osugachabot.cards.UpgradeCardResult
+import com.minetoblend.osugachabot.cards.UpgradePityService
 import com.minetoblend.osugachabot.cards.icon
 import com.minetoblend.osugachabot.cards.nextCondition
 import com.minetoblend.osugachabot.cards.prettyName
 import com.minetoblend.osugachabot.cards.upgradeCost
+import com.minetoblend.osugachabot.cards.upgradePityThreshold
 import com.minetoblend.osugachabot.cards.upgradeSuccessRate
 import com.minetoblend.osugachabot.discord.SlashCommand
 import com.minetoblend.osugachabot.discord.utils.cardId
@@ -45,6 +47,7 @@ import kotlin.time.Duration.Companion.minutes
 @Component
 class UpgradeCommand(
     private val cardReplicaService: CardReplicaService,
+    private val upgradePityService: UpgradePityService,
     private val cardRenderer: CardRenderer,
     @Qualifier("discordScope") private val scope: CoroutineScope,
 ) : SlashCommand {
@@ -81,6 +84,9 @@ class UpgradeCommand(
         private val targetCondition = replica.condition.nextCondition()
         private val cost = replica.condition.upgradeCost
         private val successPercent = (replica.condition.upgradeSuccessRate * 100).roundToInt()
+        private val pityThreshold = replica.condition.upgradePityThreshold
+        private val pityCount = upgradePityService.getPity(replica.userId, replica.condition)
+        private val guaranteed = pityCount + 1 >= pityThreshold
 
         fun MessageBuilder.render() {
             embed {
@@ -93,8 +99,13 @@ class UpgradeCommand(
                             appendLine()
                             appendLine("${replica.condition.icon} ${replica.condition.prettyName()} → ${targetCondition.icon} ${targetCondition.prettyName()}")
                             appendLine()
-                            appendLine(":game_die: Success chance: **$successPercent%**")
+                            if (guaranteed) {
+                                appendLine(":sparkles: **Pity reached — next upgrade is guaranteed!**")
+                            } else {
+                                appendLine(":game_die: Success chance: **$successPercent%**")
+                            }
                             appendLine(":money_bag: Cost: **$cost gold**")
+                            appendLine(":hourglass: Pity: **$pityCount / $pityThreshold**")
                         }
 
                         UpgradeStatus.Succeeded -> {

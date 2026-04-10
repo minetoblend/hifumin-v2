@@ -38,6 +38,20 @@ val CardCondition.upgradeSuccessRate: Double
         Mint -> error("Mint cards cannot be upgraded")
     }
 
+/**
+ * Number of consecutive failed upgrade attempts (from this condition) after which
+ * the next upgrade attempt is guaranteed to succeed.
+ *
+ * Harder upgrades have a more generous pity threshold.
+ */
+val CardCondition.upgradePityThreshold: Int
+    get() = when (this) {
+        Damaged -> 5
+        Poor -> 7
+        Good -> 10
+        Mint -> error("Mint cards cannot be upgraded")
+    }
+
 fun CardCondition.nextCondition(): CardCondition = when (this) {
     Damaged -> Poor
     Poor -> Good
