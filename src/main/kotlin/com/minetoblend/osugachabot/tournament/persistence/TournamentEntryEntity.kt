@@ -17,8 +17,8 @@ class TournamentEntryEntity(
     @Column(name = "user_id", nullable = false)
     var userId: Long,
 
-    @Column(name = "card_replica_id", nullable = false)
-    var cardReplicaId: Long,
+    @Column(name = "card_replica_id", nullable = true)
+    var cardReplicaId: Long?,
 
     @Column(name = "channel_id", nullable = false)
     var channelId: Long,

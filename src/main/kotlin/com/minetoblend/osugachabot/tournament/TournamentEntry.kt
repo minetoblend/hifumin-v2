@@ -7,7 +7,7 @@ data class TournamentEntry(
     val id: Long,
     val tournamentId: TournamentId,
     val userId: UserId,
-    val cardReplicaId: CardReplicaId,
+    val cardReplicaId: CardReplicaId?,
     val channelId: Long,
     val guildId: Long?,
     val weight: Double,

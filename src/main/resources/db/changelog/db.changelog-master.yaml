@@ -43,6 +43,8 @@ databaseChangeLog:
       file: db/changelog/changes/0022-tournament-bracket.yaml
   - include:
       file: db/changelog/changes/0023-upgrade-pity.yaml
+  - include:
+      file: db/changelog/changes/0024-tournament-card-replica-fk-on-delete.yaml
   - changeSet:
       id: 0017-quartz-schema
       author: liquibase

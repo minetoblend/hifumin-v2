@@ -1,0 +1,34 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0024-tournament-entry-card-replica-set-null
+      author: liquibase
+      changes:
+        - dropForeignKeyConstraint:
+            baseTableName: tournament_entries
+            constraintName: fk_tournament_entry_card_replica
+        - dropNotNullConstraint:
+            tableName: tournament_entries
+            columnName: card_replica_id
+            columnDataType: BIGINT
+        - addForeignKeyConstraint:
+            constraintName: fk_tournament_entry_card_replica
+            baseTableName: tournament_entries
+            baseColumnNames: card_replica_id
+            referencedTableName: card_replicas
+            referencedColumnNames: id
+            onDelete: SET NULL
+
+  - changeSet:
+      id: 0024-tournament-placement-card-replica-set-null
+      author: liquibase
+      changes:
+        - dropForeignKeyConstraint:
+            baseTableName: tournament_placements
+            constraintName: fk_tournament_placement_card_replica
+        - addForeignKeyConstraint:
+            constraintName: fk_tournament_placement_card_replica
+            baseTableName: tournament_placements
+            baseColumnNames: prize_card_replica_id
+            referencedTableName: card_replicas
+            referencedColumnNames: id
+            onDelete: SET NULL

@@ -141,8 +141,8 @@ class TournamentServiceImpl(
     override fun buildPreviewBracket(tournament: Tournament, viewerUserId: UserId): TournamentBracket {
         val entries = tournament.entries
         val viewerEntry = entries.find { it.userId == viewerUserId }
-        val viewerSnapshot = viewerEntry?.let { entry ->
-            cardReplicaRepository.findById(entry.cardReplicaId.value).orElse(null)?.let { replicaEntity ->
+        val viewerSnapshot = viewerEntry?.cardReplicaId?.let { replicaId ->
+            cardReplicaRepository.findById(replicaId.value).orElse(null)?.let { replicaEntity ->
                 val cardEntity = replicaEntity.card
                 val card = Card(
                     id = CardId(cardEntity.id),
@@ -167,7 +167,7 @@ class TournamentServiceImpl(
     }
 
     private fun TournamentEntryEntity.toMatchEntry(): TournamentMatchEntry {
-        val replicaEntity = cardReplicaRepository.findById(cardReplicaId).orElseThrow()
+        val replicaEntity = cardReplicaRepository.findById(cardReplicaId!!).orElseThrow()
         val cardEntity = replicaEntity.card
         val card = Card(
             id = CardId(cardEntity.id),
@@ -208,7 +208,7 @@ class TournamentServiceImpl(
         id = id,
         tournamentId = TournamentId(tournamentId),
         userId = userId.toUserId(),
-        cardReplicaId = CardReplicaId(cardReplicaId),
+        cardReplicaId = cardReplicaId?.let { CardReplicaId(it) },
         channelId = channelId,
         guildId = guildId,
         weight = weight,
